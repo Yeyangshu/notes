@@ -64,3 +64,23 @@ spring是一个开源框架。
 6. Spring的AOP支持允许将一些通用任务如安全、事务、日志等进行集中式处理，从而提供了更好的复用
 7. Spring的ORM和DAO提供了与第三方持久层框架的的良好整合，并简化了底层的数据库访问
 8. Spring的高度开放性，并不强制应用完全依赖于Spring，开发者可自由选用Spring框架的部分或全部
+
+#### 3.3 如何简化开发
+
+- 基于POJO的轻量级和最小侵入性编程
+- 通过依赖注入和面向接口实现松耦合
+- 基于切面和惯例进行声明式编程
+- 通过切面和模板减少样板式代码
+
+#### 3.4 模块划分
+
+<img src="D:\study\java-master\javaframework\spring\image\spring-overview.png" alt="spring-overview" style="zoom:80%;" />
+
+>模块解释：
+>Test:Spring的单元测试模块
+>Core Container:核心容器模块
+>AOP+Aspects:面向切面编程模块
+>Instrumentation:提供了class instrumentation支持和类加载器的实现来在特定的应用服务器上使用,几乎不用
+>Messaging:包括一系列的用来映射消息到方法的注解,几乎不用
+>Data Access/Integration:数据的获取/整合模块，包括了JDBC,ORM,OXM,JMS和事务模块
+>Web:提供面向web整合特性
