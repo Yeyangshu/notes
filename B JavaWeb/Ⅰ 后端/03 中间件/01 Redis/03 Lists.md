@@ -1,4 +1,6 @@
-## 一、Lists简介
+# Lists
+
+## 1 Lists简介
 
 官网：
 
@@ -10,7 +12,7 @@ Redis Lists用linked list实现的原因是：对于数据库系统来说，至�
 
 ![image-20200707204400692](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200707204400692.png)
 
-## 二、List命令
+## 2 List命令
 
 ### 2.1 help @list
 
@@ -275,7 +277,7 @@ OK
 5) "2"
 ```
 
-## 三、Lists应用场景
+## 3 Lists应用场景
 
 官网：
 
