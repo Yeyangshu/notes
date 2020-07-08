@@ -400,3 +400,5 @@ public class Person {
     }
 }
 ```
+
+IBM文档：https://developer.ibm.com/zh/articles/j-lo-java8streamapi/
