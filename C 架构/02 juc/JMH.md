@@ -25,13 +25,13 @@
 
 ### 2.2 IDEA安装JMH插件
 
-![image-20200705094952731](X:\Users\11077\AppData\Roaming\Typora\typora-user-images\image-20200705094952731.png)
+![image-20200709230803175](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200709230803175.png)
 
 ### 2.3 由于用到了注解，打开运行程序注解配置
 
 setting -> Build, Execution, Deployment -> Compiler -> Annotation Processors -> Enable Annotation Processing
 
-![image-20200705095332362](X:\Users\11077\AppData\Roaming\Typora\typora-user-images\image-20200705095332362.png)
+![image-20200709230821115](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200709230821115.png)
 
 ### 2.4 定义需要测试类PS (ParallelStream)
 
@@ -91,7 +91,7 @@ ERROR: org.openjdk.jmh.runner.RunnerException: ERROR: Exception while trying to 
 
 打开RunConfiguration -> Environment Variables -> include system environment viables
 
-![image-20200705101853140](X:\Users\11077\AppData\Roaming\Typora\typora-user-images\image-20200705101853140.png)
+![image-20200709230841190](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200709230841190.png)
 
 ### 2.7 阅读测试报告
 
