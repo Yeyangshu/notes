@@ -1,5 +1,13 @@
 # notes
-## A 编程语言基础
+## A 基础
+
+### 01 计算机
+
+### 02 JavaSE 
+
+#### 09 Java 8 新特性
+
+ [01 Lambda表达式.md]()
 
 ## B JavaWeb
 
