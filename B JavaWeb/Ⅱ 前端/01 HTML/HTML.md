@@ -38,7 +38,7 @@ Sublime快捷键
 <!DOCTYPE html> //这是超文本标记语言第五次重大变化文档声明方式
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
+	<meta charset="UTF-8"> //chartset:设置字符集
 	<title>Document</title>
 </head>
 <body>
@@ -47,5 +47,19 @@ Sublime快捷键
 </html>
 ```
 
+- HTML标签是整个网页根元素（进行页面布局的其他元素：都是嵌套在HTML标签里面作为子元素）
+- HTML标签右侧有一个lang属性（前端当中管这种写法叫做属性），属性值en(英文简写：代表的是英文下开发)
 
+![image-20200713005028317](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/20200713005036.png)
 
+### 3.1.2 常用的块元素
+
+在web开发中块元素非常常用：块(block)元素是独占一行,在页面中是由上到下进行排列。
+
+常用块元素有很多：h1~h6(标题)、div、p、ul、li.....等等
+
+注意：在书写学习这些标签（块元素），一定要注意在body标签内部进行书写。
+
+标签小技巧：打出标签名（ctrl + E）标签自动补齐；
+
+运行方式：鼠标右键+赋值路径（在浏览器中运行）
