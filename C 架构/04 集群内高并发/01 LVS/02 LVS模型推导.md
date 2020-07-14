@@ -7,7 +7,19 @@
 软件负载均衡分为四层和七层，所谓四层就是基于IP+端口的负载均衡；七层就是基于URL等应用层信息的负载均衡
 
 LVS：Linux Virtual Server
+
 ![image-20200712112146442](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/20200712112146.png)
+
+![image-20200713232602172](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200713232602172.png)
+
+
+Nginx是七层
+
+- 基于反向代理
+
+- 负载均衡
+
+  ![image-20200713232448761](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200713232448761.png)
 
 ## 1 NAT模型
 

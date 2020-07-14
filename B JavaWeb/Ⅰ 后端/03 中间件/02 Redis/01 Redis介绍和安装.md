@@ -12,12 +12,78 @@ http://download.redis.io/releases/redis-5.0.5.tar.gz
 
 
 
+```shell
+安装wget
+yum install wget
+wget http://download.redis.io/releases/redis-5.0.5.tar.gz
+tar xf redis-5.0.5.tar.gz
 先看README.md
 
-```shell
-yum install wget
+make
+显示/bin/sh: cc: command not found
+yum install gcc
+清除报错
+make distclear
+再
+make
 
+make install PREFIX=/opt/soft/redis //安装在和源码不同目录
+cd /opt/soft/redis/bin
+
+cd /root/soft/bin
+环境变量
+vi /etc/profile
+最后一行添加
+export REDIS_HOME=/opt/soft/redis
+export PATH=$PATH:$REDIS_HOME/bin
+
+source /etc/profile
+echo $PATH
+$:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/opt/soft/redis/bin
+---
+
+安装
+./install_server.sh 
+Welcome to the redis service installer
+This script will help you easily set up a running redis server
+
+Please select the redis port for this instance: [6379] 
+Selecting default: 6379
+Please select the redis config file name [/etc/redis/6379.conf] 
+Selected default - /etc/redis/6379.conf
+Please select the redis log file name [/var/log/redis_6379.log] 
+Selected default - /var/log/redis_6379.log
+Please select the data directory for this instance [/var/lib/redis/6379] 
+Selected default - /var/lib/redis/6379
+Please select the redis executable path [/opt/soft/redis/bin/redis-server] 
+Selected config:
+Port           : 6379
+Config file    : /etc/redis/6379.conf
+Log file       : /var/log/redis_6379.log
+Data dir       : /var/lib/redis/6379
+Executable     : /opt/soft/redis/bin/redis-server
+Cli Executable : /opt/soft/redis/bin/redis-cli
+Is this ok? Then press ENTER to go on or Ctrl-C to abort.
+Copied /tmp/6379.conf => /etc/init.d/redis_6379
+Installing service...
+Successfully added to chkconfig!
+Successfully added to runlevels 345!
+Starting Redis server...
+Installation successful!
+
+
+
+cd /etc/init.d
+会有一个redis_6379脚本
+此时可以在任意位置
+service redis_6379 status
+Redis is running (6014)
+
+进入redis
+redis-cli
 ```
+
+![image-20200714231217635](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200714231217635.png)
 
 ## 3 基本命令
 
