@@ -14,6 +14,8 @@
 
    File类
 
+![image-20200716003748528](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200716003748528.png)
+
 ## 2 File类
 
 ### 2.1 构造方法
