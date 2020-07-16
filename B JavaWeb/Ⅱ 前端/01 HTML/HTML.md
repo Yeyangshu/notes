@@ -52,9 +52,9 @@ Sublime快捷键
 
 ![image-20200713005028317](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/20200713005036.png)
 
-### 3.1.2 常用的块元素
+#### 3.1.2 常用的块元素
 
-在web开发中块元素非常常用：块(block)元素是独占一行,在页面中是由上到下进行排列。
+在web开发中块元素非常常用：块(block)元素是独占一行，在页面中是由上到下进行排列。
 
 常用块元素有很多：h1~h6(标题)、div、p、ul、li.....等等
 
@@ -63,3 +63,5 @@ Sublime快捷键
 标签小技巧：打出标签名（ctrl + E）标签自动补齐；
 
 运行方式：鼠标右键+赋值路径（在浏览器中运行）
+
+![image-20200717003925882](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200717003925882.png)
