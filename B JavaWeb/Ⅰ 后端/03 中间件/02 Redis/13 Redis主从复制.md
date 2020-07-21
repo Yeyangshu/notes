@@ -81,3 +81,26 @@ Redis中文官网：http://redis.cn/topics/replication.html
 Redis使用默认的异步复制，其特点是低延迟和高性能，是绝大多数 Redis 用例的自然复制模式。
 
 ![image-20200719222108340](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200719222108340.png)
+
+## 5 主从复制配置
+
+![](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200720230305858.png)
+
+
+
+repl-diskless-sync no
+
+![image-20200720225705437](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200720225705437.png)
+
+repl-backlog-size 1mb
+
+![image-20200720230203076](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200720230203076.png)
+
+
+
+一台机器开三个实例，新建一个test测试文件夹
+
+```
+cp /etc/redis/* ./
+```
+

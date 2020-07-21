@@ -85,6 +85,20 @@ redis-cli
 
 ![image-20200714231217635](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200714231217635.png)
 
+再开一个实例
+
+```
+cd /root/soft/redis-5.0.5/utils
+
+./install_server.sh
+
+输入6380
+```
+
+
+
+
+
 ## 3 基本命令
 
 ### 3.1 help
