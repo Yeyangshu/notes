@@ -1,0 +1,87 @@
+# Redis集群
+
+## 1 前景
+
+### 1.1 单点容量问题
+
+前面的文章讲解的是Redis的主从复制和高可用，属于AKF的x轴，遗留一个y、z轴问题：单节点的容量的问题
+
+### 1.2 解决方案
+
+#### 1.2.1 客户端按业务逻辑拆分，不同业务访问不同的Redis
+
+![image-20200722214752093](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200722214752093.png)
+
+#### 1.2.2 客户端按算法拆分，分片
+
+1. modula
+
+   ![image-20200722220408836](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200722220408836.png)
+
+2. random
+
+   适用于消息队列，后面有一台Redis客户端接受消息
+
+   ![image-20200722220521290](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200722220521290.png)
+
+3. kemata
+
+   更适用于缓存使用，而不是数据库！
+
+   ![image-20200722222506819](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200722222506819.png)
+
+   物理机node1和node2形成一个哈希环，数据会去下一个物理节点寻找
+
+   ![image-20200722222752218](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200722222752218.png)
+
+   如果此时多添加一个node3物理机
+
+   ![image-20200722222850964](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200722222850964.png)
+
+   优点：
+
+   - 加节点，的确可以分担其他节点的压力，不会造成全局洗牌
+
+   缺点：
+
+   - 新增节点造成一小部分数据不能命中
+
+   问题：
+
+   - 缓存击穿，数据访问压到mysql
+
+   方案：
+
+   - 每次去取离数据最近的2个物理节点寻找
+
+#### 1.2.3 代理服务器集群
+
+Redis连接成本很高
+
+![image-20200724225051612](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200724225051612.png)
+
+解决方式：负载均衡服务器，将客户端实现的算法转移至代理服务器
+
+![image-20200724225619237](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200724225619237.png)
+
+
+
+Nginx代理不作为数据库存储，所以是无状态的，可以做集群
+
+![](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200724225745033.png)
+
+twitter教程：https://github.com/twitter/twemproxy
+
+
+
+
+
+代理
+
+tw
+
+predixy
+
+cluster
+
+codis
