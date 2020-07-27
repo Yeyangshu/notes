@@ -70,9 +70,11 @@ Nginx代理不作为数据库存储，所以是无状态的，可以做集群
 
 ![](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200724225745033.png)
 
+
+
+## 2 Redis集群
+
 twitter教程：https://github.com/twitter/twemproxy
-
-
 
 
 
@@ -85,3 +87,268 @@ predixy
 cluster
 
 codis
+
+弊端：上面的三个模式不能做数据库使用
+
+Redis集群
+
+![image-20200725101257961](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200725101257961.png)
+
+每个Redis服务器有其它服务器的映射关系（主主模型）
+
+![image-20200725101339130](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200725101339130.png)
+
+弊端：
+
+数据分治
+
+聚合操作很难实现
+
+事务
+
+
+
+
+
+http://redis.cn/topics/partitioning.html
+
+
+
+## 3 Redis实战
+
+soft目录新建推特代理文件夹
+
+```
+mkdir twemproxy
+cd twemproxy
+```
+
+会报如下错误
+
+>```
+>[root@node1 twemproxy]# git clone https://github.com/twitter/twemproxy.git
+>Initialized empty Git repository in /root/soft/twemproxy/twemproxy/.git/
+>error:  while accessing https://github.com/twitter/twemproxy.git/info/refs
+>
+>fatal: HTTP request failed
+>```
+>
+>解决方案：强制升级
+>
+>yum update nss
+
+需要先安装`automake`和`libtool`
+
+```
+yum install automake libtool -y
+```
+
+按照官网继续
+
+```
+autoreconf -fvi
+```
+
+使用yum search搜索高版本报错
+
+```
+yum search autoconfig
+```
+
+![image-20200725165758186](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200725165758186.png)
+
+
+
+> 解决方式：替换阿里云仓库
+>
+> 阿里云仓库：mirrors.aliyun.com -> epel -> **epel(RHEL 6)**
+>
+> ![image-20200725170119244](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200725170119244.png)
+>
+> 
+>
+> ```
+> cd /etc/yum.repos.d/
+> wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-6.repo
+> yum clear all
+> ```
+
+此时再执行
+
+```
+yum search autoconfig
+```
+
+![image-20200725170643872](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200725170643872.png)
+
+安装autoconf268
+
+```
+yum install autoconf268
+```
+
+安装完
+
+```
+autoreconf268 -fvi
+./configure --enable-debug=full
+make
+src/nutcracker -h
+```
+
+进入twemproxy config目录
+
+```
+/root/soft/twemproxy/twemproxy/conf
+```
+
+![image-20200727215500217](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200727215500217.png)
+
+复制所有文件至etc/
+
+```
+cp ./* /etc/nutcracker
+```
+
+进入/root/soft/twemproxy/twemproxy/src，拷贝nutcracker至bin，可以在任何位置执行程序
+
+```
+ cp nutcracker /usr/bin
+```
+
+
+
+
+
+附录
+
+```shell
+#! /bin/sh
+#
+# chkconfig: - 55 45
+# description:  Twitter's twemproxy nutcracker
+# processname: nutcracker
+# config: /etc/sysconfig/nutcracker
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+USER="nobody"
+OPTIONS="-d -c /etc/nutcracker/nutcracker.yml"
+
+if [ -f /etc/sysconfig/nutcracker ];then
+    . /etc/sysconfig/nutcracker
+fi
+
+# Check that networking is up.
+if [ "$NETWORKING" = "no" ]
+then
+    exit 0
+fi
+
+RETVAL=0
+prog="nutcracker"
+
+start () {
+    echo -n $"Starting $prog: "
+    #Test the config before start.
+    daemon --user ${USER} ${prog} $OPTIONS -t >/dev/null  2>&1
+    RETVAL=$?
+    if [ $RETVAL -ne 0 ] ; then
+        echo  "Config check fail! Please  use 'nutcracker -c /etc/nutcracker/nutcracker.yml' for detail."
+        echo_failure;
+        echo;
+        exit 1
+    fi
+
+    daemon --user ${USER} ${prog} $OPTIONS
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/${prog}
+}
+stop () {
+    echo -n $"Stopping $prog: "
+    killproc ${prog}
+    RETVAL=$?
+    echo
+    if [ $RETVAL -eq 0 ] ; then
+        rm -f /var/lock/subsys/${prog}
+    fi
+}
+
+restart () {
+    stop
+    start
+}
+
+if [ -f /etc/sysconfig/nutcracker ];then
+    . /etc/sysconfig/nutcracker
+fi
+
+# Check that networking is up.
+if [ "$NETWORKING" = "no" ]
+then
+    exit 0
+fi
+
+RETVAL=0
+prog="nutcracker"
+
+start () {
+    echo -n $"Starting $prog: "
+    #Test the config before start.
+    daemon --user ${USER} ${prog} $OPTIONS -t >/dev/null  2>&1
+    RETVAL=$?
+    if [ $RETVAL -ne 0 ] ; then
+        echo  "Config check fail! Please  use 'nutcracker -c /etc/nutcracker/nutcracker.yml' for detail."
+        echo_failure;
+        echo;
+        exit 1
+    fi
+
+    daemon --user ${USER} ${prog} $OPTIONS
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/${prog}
+}
+stop () {
+    echo -n $"Stopping $prog: "
+    killproc ${prog}
+    RETVAL=$?
+    echo
+    if [ $RETVAL -eq 0 ] ; then
+        rm -f /var/lock/subsys/${prog}
+    fi
+}
+
+restart () {
+    stop
+    start
+}
+
+
+# See how we were called.
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  status)
+    status ${prog}
+    ;;
+  restart|reload)
+    restart
+    ;;
+  condrestart)
+    [ -f /var/lock/subsys/nutcracker ] && restart || :
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|status|restart|reload|condrestart}"
+    exit 1
+esac
+
+exit $?
+```
+
