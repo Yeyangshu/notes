@@ -76,7 +76,7 @@ Nginx代理不作为数据库存储，所以是无状态的，可以做集群
 
 twitter教程：https://github.com/twitter/twemproxy
 
-
+predixy：https://github.com/joyieldInc/predixy
 
 代理
 
@@ -115,6 +115,8 @@ http://redis.cn/topics/partitioning.html
 
 
 ## 3 Redis实战
+
+### 3.1 twemproxy
 
 soft目录新建推特代理文件夹
 
@@ -190,11 +192,37 @@ yum install autoconf268
 安装完
 
 ```
-autoreconf268 -fvi
+autoreconf268 -fvi //会多一个configure
 ./configure --enable-debug=full
 make
 src/nutcracker -h
 ```
+
+/root/soft/twemproxy/twemproxy/scripts，nutcracker.init是twemproxy启动脚本文件，拷贝init文件
+
+```
+cp nutcracker.init /etc/init.d/twemproxy
+```
+
+进入etc/init.d/
+
+```
+cd /etc/init.d/
+```
+
+查看文件，此时文件是不可执行文件
+
+![image-20200801100124973](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801100124973.png)
+
+更改执行权限
+
+```
+chmod +x twemproxy
+```
+
+期望配置文件地址
+
+![image-20200801100303108](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801100303108.png)
 
 进入twemproxy config目录
 
@@ -210,17 +238,88 @@ src/nutcracker -h
 cp ./* /etc/nutcracker
 ```
 
-进入/root/soft/twemproxy/twemproxy/src，拷贝nutcracker至bin，可以在任何位置执行程序
+进入/root/soft/twemproxy/twemproxy/src，拷贝nutcracker（可执行程序）至bin，可以在任何位置执行程序nutcracker
 
 ```
  cp nutcracker /usr/bin
 ```
 
+进入cd /etc/nutcracker/修改配置文件，习惯拷贝一份，防止改错
+
+```
+cd /etc/nutcracker/
+// 备份配置文件
+cp nutcracker.yml nutcracker.yml.bak
+```
+
+修改配置文件，配置文件的介绍可以看官网
+
+![image-20200801092038827](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801092038827.png)
+
+按住dG删除127.0.0.1:6379:1后所有内容
+
+![image-20200801092832794](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801092832794.png)
+
+yy+p，复制粘贴，修改文件
+
+![image-20200801093022014](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801093022014.png)
+
+Redis手动启动会以当前目录作为持久化目录，新建data 6379/6380目录，并手动启动Redis
+
+```
+mkdir data
+cd data
+mkdir 6379
+cd 6379
+redis-server --port 6379
+redis-cli -p 6380 shutdown
+```
+
+启动twemproxy服务
+
+```
+service twemproxy start
+```
+
+![image-20200801100515455](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801100515455.png)
 
 
 
+验证代理：
 
-附录
+连接到代理服务器
+
+```
+redis-cli -p 22121
+```
+
+set一些值
+
+```
+127.0.0.1:22121> set k01 aaa
+OK
+127.0.0.1:22121> set k02 bbb
+OK
+127.0.0.1:22121> set k03 ccc
+OK
+
+6379机器
+127.0.0.1:6379> keys *
+1) "k02"
+2) "k01"
+3) "k03"
+680机器
+127.0.0.1:6380> keys *
+
+```
+
+由于分制，代理服务器有一些命令不可以使用
+
+![image-20200801104646530](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801104646530.png)
+
+
+
+附录：/root/soft/twemproxy/twemproxy/scripts，nutcracker.init是twemproxy启动脚本文件
 
 ```shell
 #! /bin/sh
@@ -350,5 +449,21 @@ case "$1" in
 esac
 
 exit $?
+```
+
+### 3.2 predixy
+
+predixy release地址：https://github.com/joyieldInc/predixy/releases
+
+复制地址
+
+![image-20200801105551525](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801105551525.png)
+
+soft目录下新建文件夹
+
+```
+mkdir predixy
+cd predixy/
+wget https://github.com/joyieldInc/predixy/releases/download/1.0.5/predixy-1.0.5-bin-amd64-linux.tar.gz
 ```
 
