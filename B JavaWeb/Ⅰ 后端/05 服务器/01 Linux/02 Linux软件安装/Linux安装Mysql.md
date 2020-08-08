@@ -94,5 +94,8 @@ https://www.cnblogs.com/shidian/p/11589626.html
 
     如果还不行，重启一下mysql服务
 
-    
+11. 如果不希望每次进到bin目录下使用mysql命令，则执行一下命令。
 
+    ```
+    ln -s  /usr/local/mysql/bin/mysql    /usr/bin
+    ```
