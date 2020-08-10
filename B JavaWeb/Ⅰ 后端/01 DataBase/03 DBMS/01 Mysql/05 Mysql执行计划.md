@@ -12,20 +12,20 @@
 
 ## 1 执行计划包含的信息
 
-|    Column     |                    Meaning                     |
-| :-----------: | :--------------------------------------------: |
-|      id       |            The `SELECT` identifier             |
-|  select_type  |               The `SELECT` type                |
-|     table     |          The table for the output row          |
-|  partitions   |            The matching partitions             |
-|     type      |                 The join type                  |
-| possible_keys |         The possible indexes to choose         |
-|      key      |           The index actually chosen            |
-|    key_len    |          The length of the chosen key          |
-|      ref      |       The columns compared to the index        |
-|     rows      |        Estimate of rows to be examined         |
-|   filtered    | Percentage of rows filtered by table condition |
-|     Extra     |             Additional information             |
+|     Column      |                    Meaning                     |
+| :-------------: | :--------------------------------------------: |
+|     **id**      |          **The `SELECT` identifier**           |
+| **select_type** |             **The `SELECT` type**              |
+|      table      |          The table for the output row          |
+|   partitions    |            The matching partitions             |
+|    **type**     |               **The join type**                |
+|  possible_keys  |         The possible indexes to choose         |
+|       key       |           The index actually chosen            |
+|     key_len     |          The length of the chosen key          |
+|       ref       |       The columns compared to the index        |
+|      rows       |        Estimate of rows to be examined         |
+|    filtered     | Percentage of rows filtered by table condition |
+|      Extra      |             Additional information             |
 
 ### 1.1 id
 
@@ -39,17 +39,23 @@ id号分为三种情况：
    explain select * from emp e join dept d on e.deptno = d.deptno join salgrade sg on e.sal between sg.losal and sg.hisal;
    ```
 
+   ![image-20200809101530534](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200809101530534.png)
+
 2. 如果id不同，如果是子查询，id的序号会递增，id值越大优先级越高，越先被执行
 
    ```mysql
    explain select * from emp e where e.deptno in (select d.deptno from dept d where d.dname = 'SALES');
    ```
 
+   ![image-20200809101847442](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200809101847442.png)
+
 3. id相同和不同的，同时存在：相同的可以认为是一组，从上往下顺序执行，在所有组中，id值越大，优先级越高，越先执行
 
    ```mysql
    explain select * from emp e join dept d on e.deptno = d.deptno join salgrade sg on e.sal between sg.losal and sg.hisal where e.deptno in (select d.deptno from dept d where d.dname = 'SALES');
    ```
+   
+   ![image-20200809102327485](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200809102327485.png)
 
 ### 1.2 select_type
 
@@ -152,7 +158,7 @@ explain select * from emp where empno = 7369;
 
 ### 1.5 possible_keys
 
-        显示可能应用在这张表中的索引，一个或多个，查询涉及到的字段上若存在索引，则该索引将被列出，但不一定被查询实际使用
+    显示可能应用在这张表中的索引，一个或多个，查询涉及到的字段上若存在索引，则该索引将被列出，但不一定被查询实际使用
 
 ```sql
 explain select * from emp,dept where emp.deptno = dept.deptno and emp.deptno = 10;
@@ -160,7 +166,7 @@ explain select * from emp,dept where emp.deptno = dept.deptno and emp.deptno = 1
 
 ### 1.6 key
 
-		实际使用的索引，如果为null，则没有使用索引，查询中若使用了覆盖索引，则该索引和查询的select字段重叠。
+	实际使用的索引，如果为null，则没有使用索引，查询中若使用了覆盖索引，则该索引和查询的select字段重叠。
 
 ```sql
 explain select * from emp,dept where emp.deptno = dept.deptno and emp.deptno = 10;
