@@ -70,23 +70,359 @@ Apache dubbo是一高性能、轻量级的开源Java框架，它提供了三大�
 
 
 
+## 5 SpringBoot+Dubbo案例
+
+### 5.1 服务提供方 Provider
+
+整体目录结构
+
+--dubbo-provider
+
+  --com
+
+    --yeyangshu
+    
+      --service
+    
+        --**IDemoService**
+    
+        --**DemoServiceImpl**
+
+#### 5.1.1 pom.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.1.7.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.yeyangshu</groupId>
+	<artifactId>dubbo-provider</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>com.yeyangshu</name>
+	<description>dubbo demo provider</description>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<dubbo.version>2.7.7</dubbo.version>
+		<spring-boot.version>2.3.0.RELEASE</spring-boot.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!--Dubbo-->
+		<dependency>
+			<groupId>org.apache.dubbo</groupId>
+			<artifactId>dubbo-spring-boot-starter</artifactId>
+			<version>${dubbo.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.dubbo</groupId>
+			<artifactId>dubbo</artifactId>
+			<version>${dubbo.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-framework</artifactId>
+			<version>4.2.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-recipes</artifactId>
+			<version>4.2.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.zookeeper</groupId>
+					<artifactId>zookeeper</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
+			<version>3.4.14</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+```
+
+#### 5.1.2 配置文件
+
+```properties
+#服务端口号
+server.port=8081
+spring.application.name=DemoProvider
+
+dubbo.scan.base-packages=com.yeyangshu.service //包路径要与consumer一致
+dubbo.protocol.name=dubbo
+dubbo.protocol.port=666
+dubbo.protocol.host=127.0.0.1
+#dubbo注册中心
+dubbo.registry.address=zookeeper://127.0.0.1:2181
+```
+
+#### 5.1.3 服务接口
+
+IDemoService.java
+
+```java
+package com.yeyangshu.service;
+
+public interface IDemoService {
+    public String say(String name);
+}
+```
+
+#### 5.1.4 服务实现接口
+
+DemoServiceImpl.java
+
+```java
+package com.yeyangshu.service;
+
+import org.apache.dubbo.config.annotation.Service;
+
+@Service(version = "1.0.0", timeout = 10000,interfaceClass = IDemoService.class)
+public class DemoServiceImpl implements IDemoService {
+    @Override
+    public String say(String name) {
+        System.out.println("hi! " + name);
+        return "h1! " + name;
+    }
+}
+```
+
+### 5.2 服务消费方 Consumer
+
+创建SpringBoot-web项目
+
+整体目录结构
+
+--dubbo-consumer
+
+  --com
+
+    --yeyangshu
+    
+      --controller
+    
+        --**MainController**
+    
+      --service
+    
+        --**IDemoService**
+
+#### 5.1.1 pom.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.1.7.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.yeyangshu</groupId>
+	<artifactId>dubbo-consumer</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>dubbo-consumer</name>
+	<description>dubbo demo consumer</description>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<dubbo.version>2.7.7</dubbo.version>
+		<spring-boot.version>2.3.0.RELEASE</spring-boot.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!--Dubbo-->
+		<dependency>
+			<groupId>org.apache.dubbo</groupId>
+			<artifactId>dubbo-spring-boot-starter</artifactId>
+			<version>${dubbo.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.dubbo</groupId>
+			<artifactId>dubbo</artifactId>
+			<version>${dubbo.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-framework</artifactId>
+			<version>4.2.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-recipes</artifactId>
+			<version>4.2.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.zookeeper</groupId>
+					<artifactId>zookeeper</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
+			<version>3.4.14</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+		</repository>
+		<repository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+</project>
+```
+
+#### 5.1.2 配置文件
+
+```properties
+server.port=8082
+spring.application.name=DemoConsumer
+dubbo.scan.base-packages=com.yeyangshu.service
+#dubbo注册中心
+dubbo.registry.address=zookeeper://127.0.0.1:2181
+```
+
+#### 5.1.3 服务接口
+
+IDemoService.java
+
+```java
+package com.yeyangshu.service;
+
+public interface IDemoService {
+    public String say(String name);
+}
+```
+
+#### 5.1.4 Controller
+
+MainController.java
+
+重点：
+
+```java
+@Reference(version = "1.0.0")
+IDemoService iDemoService;
+```
 
 
 
+```java
+package com.yeyangshu.controller;
 
+import com.yeyangshu.service.IDemoService;
+import org.apache.dubbo.config.annotation.Reference;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
+@RequestMapping("/")
+public class MainController {
 
+    @Reference(version = "1.0.0")
+    IDemoService iDemoService;
 
+    @RequestMapping("say")
+    public String say() {
+        return iDemoService.say("Hello World?");
+    }
+}
+```
 
+### 5.3 服务调用
 
+首先启动Zookeeper，再启动服务提供者，在启动服务消费者
 
-
-
-
-
-
-
-
+打开127.0.0.1:8082/say
 
 
 
