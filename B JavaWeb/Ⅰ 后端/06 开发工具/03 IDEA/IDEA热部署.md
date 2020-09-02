@@ -32,3 +32,5 @@ File | Settings | Build, Execution, Deployment | Compiler
 ```
 
 勾选 ctrl + shift + alt + / ，Registry...，complier.automake.allow.when.app.running
+
+![image-20200830104951704](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200830104951704.png)
