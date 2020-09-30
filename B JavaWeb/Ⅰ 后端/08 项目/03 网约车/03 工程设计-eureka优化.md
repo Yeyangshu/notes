@@ -222,3 +222,40 @@ debug 启动 server，打断点，postman发起post请求： `127.0.0.1:7900/eur
 </instance>
 ```
 
+# 
+
+### 地区、可用区
+
+减少网络延迟
+
+server
+
+```yaml
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    region: bj
+    availability-zones:
+      bj: z1, z2
+    sevice-url:
+      z1: http://localhost:7911/eureka/,http://localhost:7912/eureka/
+      z2: http://localhost:7921/eureka/,http://localhost:7922/eureka/
+```
+
+provider
+
+```yaml
+eureka:
+  client:
+    region: bj
+    availability-zones:
+      bj: z2
+    perfer-same-zone-eureka: true
+```
+
+eureka server
+
+操作：单体，高可用，分区域
+
+源码：6个，注册、心跳、下线、剔除、拉取注册表、集群同步
