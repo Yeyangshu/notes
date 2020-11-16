@@ -344,6 +344,8 @@ Queue queue = session.createQueue("xxoo?consumer.exclusive=true&consumer.priorit
 
 ## 2 消息类型
 
+
+
 ### 2.1 ObjectMessage
 
 #### 2.1.1 发送端
