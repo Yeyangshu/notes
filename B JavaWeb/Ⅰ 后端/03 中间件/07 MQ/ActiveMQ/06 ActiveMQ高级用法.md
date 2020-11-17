@@ -93,15 +93,29 @@ producer.setPriority(9);
 
 **JMSReplyTo**
 
+发送方可以接受到消息消费确认的地址
+
 ```java
 textMessage.setJMSReplyTo(new ActiveMQQueue("replyTo"));
 ```
 
 **JMSCorrelationID**
 
-粒度细于栓选
+粒度细于筛选
 
+用于消息之间的关联，给人一种会话的感觉
 
+http://activemq.apache.org/how-should-i-implement-request-response-with-jms.html
+
+**QueueRequestor同步消息**
+
+可以发送同步消息
+
+本质违背了mq的异步通讯原则
+
+但是mq还是能够提供应用解耦、异构系统的特性
+
+因为使用QueueRequestor发送消息后，会等待接收端的回复，如果收不到回复就会造成死等现象!而且该方法没有设置超时等待的功能 
 
 
 
