@@ -2,15 +2,15 @@
 
 Redis 是一个开源（BSD许可）的，内存中的数据结构存储系统，它可以用作数据库、缓存和消息中间件。 它支持多种类型的数据结构，如 字符串（strings）， 散列（hashes）， 列表（lists）， 集合（sets）， 有序集合（sorted sets） 与范围查询， bitmaps， hyperloglogs 和 地理空间（geospatial） 索引半径查询。 Redis 内置了 复制（replication），LUA脚本（Lua scripting）， LRU驱动事件（LRU eviction），事务（transactions） 和不同级别的 磁盘持久化（persistence）， 并通过 Redis哨兵（Sentinel）和自动 分区（Cluster）提供高可用性（high availability）。
 
-db-engines：https://db-engines.com/en/ranking
+数据库排名网站：https://db-engines.com/en/：上面有很多数据库的介绍，做技术架构、技术选型的时候使用，将网站的模型看一下，文档存储、图、时序的、关系的、键值对的、列式的必须要看，并且背下来，他们之间的差异在哪里？面试的时候会让面试管眼前一亮，并不是背概念。
 
+Redis官方网站：https://db-engines.com/en/
 
+Redis官方文档：https://redis.io/documentation
 
 ## 2 安装
 
-http://download.redis.io/releases/redis-5.0.5.tar.gz
-
-
+官方文档：http://download.redis.io/releases/redis-5.0.5.tar.gz
 
 ```shell
 安装wget
@@ -87,17 +87,13 @@ redis-cli
 
 再开一个实例
 
-```
+```shell
 cd /root/soft/redis-5.0.5/utils
 
 ./install_server.sh
 
 输入6380
 ```
-
-
-
-
 
 ## 3 基本命令
 
@@ -120,9 +116,11 @@ Set your preferences in ~/.redisclirc
 
 ### 3.2 help @generic
 
+在客户端输入`help @`，按TAB键，会出现所有的分组
+
 查看通用组命令
 
-```she
+```shell
 127.0.0.1:6379> help @generic
 
   DEL key [key ...]
@@ -281,6 +279,131 @@ Set your preferences in ~/.redisclirc
   summary: Help not available
   since: not known
 ```
+
+### 3.2 generic分组命令详解
+
+#### 3.2.1 EXISTS
+
+####  3.2.2 KEYS
+
+#### 3.2.3 MOVE
+
+#### 3.2.4 TYPE
+
+```
+127.0.0.1:6379> help type
+
+  TYPE key
+  summary: Determine the type stored at key
+  since: 1.0.0
+  group: generic
+```
+
+返回 key 所储存的值的类型（命令是哪个分组，key的类型就是哪个分组）。 
+
+案例：
+
+```shell
+127.0.0.1:6379> set k1 99
+OK
+127.0.0.1:6379> type k1
+string
+```
+
+#### 3.2.5 OBJECT
+
+```
+127.0.0.1:6379> help object
+
+  OBJECT subcommand [arguments [arguments ...]]
+  summary: Inspect the internals of Redis objects
+  since: 2.2.3
+  group: generic
+```
+
+OBJECT 命令允许从内部察看给定 `key` 的 Redis 对象。
+
+它通常用在除错(debugging)或者了解为了节省空间而对 `key` 使用特殊编码的情况。
+
+当将Redis用作缓存程序时，你也可以通过 OBJECT 命令中的信息，决定 `key` 的驱逐策略(eviction policies)。
+
+OBJECT 命令有多个子命令：
+
+- `OBJECT REFCOUNT <key>` 返回给定 `key` 引用所储存的值的次数。此命令主要用于除错。
+- `OBJECT ENCODING <key>` 返回给定 `key` 锁储存的值所使用的内部表示(representation)，也就是编码。
+- `OBJECT IDLETIME <key>` 返回给定 `key` 自储存以来的空转时间(idle， 没有被读取也没有被写入)，以秒为单位。
+
+案例：
+
+```shell
+127.0.0.1:6379> set k1 99
+OK
+127.0.0.1:6379> object encoding k1
+"int"
+
+127.0.0.1:6379> set k2 hello
+OK
+127.0.0.1:6379> object  encoding k2
+"embstr"
+```
+
+## 4 二进制安全
+
+编码
+
+```shell
+127.0.0.1:6379> set k1 99
+OK
+127.0.0.1:6379> object encoding k1
+"int"
+127.0.0.1:6379> set k2 hello
+OK
+127.0.0.1:6379> object encoding k2
+"embstr"
+```
+
+二进制安全
+
+```shell
+127.0.0.1:6379> set k1 hello
+OK
+127.0.0.1:6379> STRLEN k1
+(integer) 5
+
+127.0.0.1:6379> set k2 9
+OK
+127.0.0.1:6379> OBJECT encoding k2
+"int"
+127.0.0.1:6379> STRLEN k2
+(integer) 1
+
+127.0.0.1:6379> APPEND k2 999
+(integer) 4
+127.0.0.1:6379> get k2
+"9999"
+127.0.0.1:6379> OBJECT encoding k2
+"raw"
+
+127.0.0.1:6379> INCR k2
+(integer) 10000
+127.0.0.1:6379> OBJECT encoding k2
+"int"
+127.0.0.1:6379> STRLEN k2
+(integer) 5
+
+127.0.0.1:6379> set k3 a
+OK
+127.0.0.1:6379> get k3
+"a"
+127.0.0.1:6379> STRLEN k3
+(integer) 1
+127.0.0.1:6379> APPEND k3 中
+(integer) 3
+127.0.0.1:6379> STRLEN k3
+(integer) 3
+```
+
+Redis只取字节流，一定要在开发中沟通好数据的编码和解码。
 
 
 
