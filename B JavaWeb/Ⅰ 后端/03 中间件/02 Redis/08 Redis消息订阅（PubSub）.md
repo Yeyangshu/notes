@@ -1,4 +1,4 @@
-# Pub/Sub
+# Redis 发布订阅（Pub/Sub）
 
 中文官网：http://redis.cn/topics/pubsub.html
 
