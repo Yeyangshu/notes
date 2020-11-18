@@ -8,6 +8,8 @@ Redis官方网站：https://db-engines.com/en/
 
 Redis官方文档：https://redis.io/documentation
 
+Redis命令参考：http://doc.redisfans.com/
+
 ## 2 安装
 
 官方文档：http://download.redis.io/releases/redis-5.0.5.tar.gz
