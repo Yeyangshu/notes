@@ -86,37 +86,65 @@ public class SimpleIteration {
 
 ## 3 Iterator实现类
 
-- ListIterator：ListIterator是一个更加强大的Iterator的子类型，它只能用于各种List类的访问。ListIterator可以双向移动，它还可以相对于迭代器在列表中指向的当前位置的前一个和后一个元素的索引，并且可以使用set()方法替换它访问过的最后一个元素。你还可以通过调用listIterator()方法产生一个指向List开始处的ListIterator，并且还可以通过调用listIterator(n)方法创建一个一开始就指向列表元素处的ListIterator。
+### 3.1 ListIterator
 
-  ```java
-  public class ListIteration {
-      public static void main(String[] args) {
-          List<Pet> pets = Pets.arrayList(8);
-          ListIterator<Pet> it = pets.listIterator();
-          while (it.hasNext())
-              System.out.print(it.next() + ", " + it.nextIndex() +
-                      ", " + it.previousIndex() + "; ");
-          System.out.println();
-          // Backwards:
-          while (it.hasPrevious()) {
-            System.out.print(it.previous().id() + " ");
-          }
-          System.out.println();
-          System.out.println(pets);
-          
-          it = pets.listIterator(3);
-          while (it.hasNext()) {
-              it.next();
-              it.set(Pets.randomPet());
-          }
-          System.out.println(pets);
-      }
-  }
-  
-  Rat, 1, 0; Manx, 2, 1; Cymric, 3, 2; Mutt, 4, 3; Pug, 5, 4; Cymric, 6, 5; Pug, 7, 6; Manx, 8, 7; 
-  7 6 5 4 3 2 1 0 
-  [Rat, Manx, Cymric, Mutt, Pug, Cymric, Pug, Manx]
-  [Rat, Manx, Cymric, Cymric, Rat, EgyptianMau, Hamster, EgyptianMau]
-  ```
+ListIterator：ListIterator是一个更加强大的Iterator的子类型，它只能用于各种List类的访问。ListIterator可以双向移动，它还可以相对于迭代器在列表中指向的当前位置的前一个和后一个元素的索引，并且可以使用set()方法替换它访问过的最后一个元素。你还可以通过调用listIterator()方法产生一个指向List开始处的ListIterator，并且还可以通过调用listIterator(n)方法创建一个一开始就指向列表元素处的ListIterator。
 
-  
+#### 3.1.1 ListIterator使用
+
+```java
+public class ListIteration {
+    public static void main(String[] args) {
+        List<Pet> pets = Pets.arrayList(8);
+        ListIterator<Pet> it = pets.listIterator();
+        while (it.hasNext())
+            System.out.print(it.next() + ", " + it.nextIndex() +
+                    ", " + it.previousIndex() + "; ");
+        System.out.println();
+        // Backwards:
+        while (it.hasPrevious()) {
+          System.out.print(it.previous().id() + " ");
+        }
+        System.out.println();
+        System.out.println(pets);
+        
+        it = pets.listIterator(3);
+        while (it.hasNext()) {
+            it.next();
+            it.set(Pets.randomPet());
+        }
+        System.out.println(pets);
+    }
+}
+
+Rat, 1, 0; Manx, 2, 1; Cymric, 3, 2; Mutt, 4, 3; Pug, 5, 4; Cymric, 6, 5; Pug, 7, 6; Manx, 8, 7; 
+7 6 5 4 3 2 1 0 
+[Rat, Manx, Cymric, Mutt, Pug, Cymric, Pug, Manx]
+[Rat, Manx, Cymric, Cymric, Rat, EgyptianMau, Hamster, EgyptianMau]
+```
+
+#### 3.1.2 为什么需要ListIterator？
+
+在迭代过程中，准备添加或者删除元素
+
+#### 3.1.3 ListIterator的作用 -> 解决并发操作异常
+
+在迭代时，不可能通过集合对象的方法(al.add(?))操作集合中的元素，
+
+- 会发生并发修改异常。
+
+- 所以，在迭代时只能通过迭代器的方法操作元素，但是Iterator的方法是有限的，只能进行判断(hasNext)，取出(next)，删除(remove)的操作
+
+- 如果想要在迭代的过程中进行向集合中添加，修改元素等就需要使用ListIterator接口中的方法
+
+```java
+ListIterator li=al.listIterator();
+while(li.hasNext()){
+    Object obj=li.next();
+    if ("java2".equals(obj)) {
+        li.add("java9994");
+        li.set("java002");
+    }
+}
+```
+
