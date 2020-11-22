@@ -2,6 +2,10 @@
 
 ## 1 安装并设置环境变量
 
+ZooKeeper官网：https://zookeeper.apache.org/ -> Getting Started -> Download 
+
+
+
 下载zookeeper-3.4.10.tar.gz并解压，移动解压后的文件夹至/opt/soft
 
 zookeeper目录结构
@@ -14,7 +18,7 @@ zookeeper目录结构
 
 tmp/zookeeper -> var/zookeeper
 
-```
+```properties
 # The number of milliseconds of each tick
 tickTime=2000
 # The number of ticks that the initial
@@ -25,8 +29,7 @@ initLimit=10
 syncLimit=5
 # the directory where the snapshot is stored.
 # do not use /tmp for storage, /tmp here is just
-# example sakes.
-// 修改文件夹
+# 修改文件夹
 dataDir=/var/zookeeper
 # the port at which the clients will connect
 clientPort=2181
@@ -45,13 +48,14 @@ clientPort=2181
 # Set to "0" to disable auto purge feature
 #autopurge.purgeInterval=1
 
-// 新增配置，一定要先配置服务器hosts
+# 新增配置，一定要先配置服务器hosts
 server.1=node01:2888:3888
 server.2=node02:2888:3888
 server.3=node03:2888:3888
 server.4=node04:2888:3888
-
 ```
+
+
 
 >一定要先配置服务器hosts
 >
