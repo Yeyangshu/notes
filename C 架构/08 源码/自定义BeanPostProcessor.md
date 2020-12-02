@@ -1,0 +1,13 @@
+# BeanPostProcessor
+
+定义一个MyAwareProcessor实现BeanPostProcessor
+
+此方法中的 postProcessBeforeInitialization 可以设置其他属性
+
+
+
+AbstractAutowireCapableBeanFactory
+
+自动注入类
+
+autowireByName
