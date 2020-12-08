@@ -1,0 +1,178 @@
+# 迭代器模式
+
+**容器与容器遍历**
+
+迭代器模式（Iterator Pattern）是最常被使用的几个模式之一，被广泛地应用到Java 的API中。例如，Java的集合（Collection）框架中，就广泛使用迭代器来遍历集合中的元素。
+
+## 1 迭代器模式的定义
+
+迭代器模式的英文原话：
+
+> Provide a way to access the elements of an aggregate object sequentiallywithout exposing its underlying representation.
+
+意思是：提供一种方法访问一个容器对象中各个元素，而又不需暴露该对象的内部细节。
+
+迭代器是为容器服务的，容器是指用来容纳其他对象的对象，例如，Collection集合类型、Set类等。迭代器模式便于遍历和访问容器中的各个元素，类图如图5-11所示。
+
+
+
+迭代器模式有以下4个角色：
+
+- 抽象迭代器（Iterator）角色：该角色负责定义访问和遍历元素的接口。
+
+- 具体迭代器（Concrete Iterator）角色：该角色实现Iterator接口，完成容器元素的遍历。
+
+- 抽象聚集（Aggregate）角色：该角色提供创建迭代器角色的接口。
+
+- 具体聚集（Concrete Aggregate）角色：该角色实现抽象聚集接口，创建出容纳迭代器的对象。
+
+
+
+代码：
+
+### v1 自定义数组
+
+```java
+/**
+ * 自定义数组
+ */
+public class CustomArrayList {
+
+    /** 初始化容量为10 */
+    Object[] objects = new Object[10];
+
+    /** 指示下一个空位置，或元素个数 */
+    private int index = 0;
+
+    /**
+     * 添加元素
+     *
+     * @param object
+     */
+    public void add(Object object) {
+        if (index == objects.length) {
+            // 进行扩容，扩容为原来的两倍
+            Object[] newObjects = new Object[objects.length * 2];
+            System.arraycopy(objects, 0, newObjects, 0, objects.length);
+            objects = newObjects;
+        }
+        // 赋值
+        objects[index] = object;
+        // 更新下标
+        index++;
+    }
+
+    /**
+     * 容器元素个数
+     */
+    public int size() {
+        return index;
+    }
+}
+```
+
+调用
+
+```java
+public class Client {
+    public static void main(String[] args) {
+        CustomArrayList arrayList = new CustomArrayList();
+        for (int i = 0; i < 15; i++) {
+            arrayList.add("s" + i);
+        }
+        System.out.println(arrayList.size());
+    }
+}
+```
+
+### v2 自定义链表
+
+```java
+/**
+ * 自定义链表
+ */
+public class CustomLinkedList {
+
+    Node head = null;
+    Node tail = null;
+    // 目前容器中有多少个元素
+    private int size = 0;
+
+    public void add(Object o) {
+        Node n = new Node(o);
+        n.next = null;
+
+        if (head == null) {
+            head = n;
+            tail = n;
+        }
+
+        tail.next = n;
+        tail = n;
+        size++;
+    }
+
+    private class Node {
+        private Object o;
+        Node next;
+
+        public Node(Object o) {
+            this.o = o;
+        }
+    }
+
+    public int size() {
+        return size;
+    }
+}
+```
+
+main
+
+```java
+public class Client {
+    public static void main(String[] args) {
+        CustomLinkedList linkedList = new CustomLinkedList();
+        for (int i = 0; i < 15; i++) {
+            linkedList.add("s" + i);
+        }
+        System.out.println(linkedList.size());
+    }
+}
+```
+
+### v3 添加容器的共同接口，实现容器的替换
+
+方案：实现统一个接口
+
+```java
+public interface CustomCollection {
+    
+    void add(Object o);
+    
+    int size();
+    
+}
+```
+
+### V4 如何对容器遍历呢？
+
+### v5 用一种统一的遍历方式，要求每一个容器都要提供Iterator的实现类
+
+每一个容器都实现自己的遍历逻辑
+
+### v6 JDK的容器实现
+
+### v7 实现泛型版本
+
+
+
+
+
+
+
+
+
+- - 
+
+  
