@@ -1,8 +1,17 @@
 # Lambda表达式
 
+Lamdba教程网站：https://www.w3cschool.cn/java/codetag-stream-lambda_api.html
+
 ## 1 Lambda表达式介绍
 
 Lambda表达式是Java8最重要的新功能之一。使用Lambda表达式可以替代只有一个抽象函数的接口实现，告别匿名内部类，代码看起来更简洁易懂。Lambda表达式同时还提升了对集合、框架的迭代、遍历、过滤数据的操作。
+
+可以把Lambda表达式理解为简洁地表示可传递的匿名函数的一种方式：它没有名称，但它有参数列表、函数主体、返回类型，可能还有一个可以抛出的异常列表。
+
+- 匿名：我们说匿名，是因为它不像普通的方法那样有一个明确的名称：写得少而想得多！
+- 函数：我们说它是函数，是因为Lambda函数不像方法那样属于某个特定的类。但和方法一样，Lambda有参数列表、函数主体、返回类型，还可能有可以抛出的异常列表。
+- 传递：Lambda表达式可以作为参数传递给方法或存储在变量中
+- 简洁：无需像匿名类那样写很多模板代码。
 
 ## 2 Lambda表达式的特点
 
@@ -17,16 +26,45 @@ Lambda表达式是Java8最重要的新功能之一。使用Lambda表达式可以
 java.util.function 它包含了很多类，用来支持 Java的 函数式编程，该包中的函数式接口有：
 菜鸟教程：https://www.runoob.com/java/java8-functional-interfaces.html
 
-Supplier 代表一个输出
+- Supplier 代表一个输出
+- Consumer 代表一个输入
+  BiConsumer 代表两个输出
+- Function 代表一个输入，一个输出（一般输入和输出是不同类型的）
+  UnaryOperater 代表一个输入，一个输出（输入和输出是相同类型的）
+- BiFunction 代表两个输入，一个输出（一般输入和输出是不同类型的）
+  BinaryOperater 代表两个输入，一个输出（输入和输出是相同类型的）
 
-Consumer 代表一个输入
-BiConsumer 代表两个输出
 
-Function 代表一个输入，一个输出（一般输入和输出是不同类型的）
-UnaryOperater 代表一个输入，一个输出（输入和输出是相同类型的）
 
-BiFunction 代表两个输入，一个输出（一般输入和输出是不同类型的）
-BinaryOperater 代表两个输入，一个输出（输入和输出是相同类型的）
+函数作为方法传递
+
+```java
+public static void main(String[] args) throws Exception {
+    // Function简单使用
+    Function<String, Integer> number = Integer::valueOf;
+    System.out.println("number：" + number.apply("100"));
+
+    // 函数作为方法传递
+    String request = "Hello World";
+    Integer length = (Integer) handle(request, String::length);
+    System.out.println("length：" + length);
+    // w3cschool样例
+    String result = calc((a) -> "Result: " + (a * 2), 10);
+    System.out.println(result);
+}
+
+// flux
+static <T> Object handle(String request, Function<T, Integer> function) {
+    return function.apply((T) request);
+}
+static String calc(Function<Integer, String> bi, Integer i) {
+    return bi.apply(i);
+}
+
+// number：100
+// length：11
+// Result: 20
+```
 
 ## 5 方法的引用
 方法的引用是用来直接访问类或者实例的已经存在的方法或者构造方法，方法引用提供了一种引用而不是执行的方式，如果抽象方法的实现恰好可以使用调用另一个方法实现，就有可能可以使用方法引用。
