@@ -1,5 +1,3 @@
-[TOC]
-
 # Mysql日志
 
 官网：https://dev.mysql.com/doc/refman/5.7/en/server-logs.html
