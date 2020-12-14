@@ -24,7 +24,7 @@
   - hash
   - 二叉树
   - B树
-  - B+树
+  - **B+树**：MySQL使用B+树
 
 ## 3 索引的分类
 
@@ -42,7 +42,7 @@ Mysql索引有五种类型：主键索引、唯一索引、普通索引、全文
 
   基本的索引类型，值可以为空，没有唯一性限制。（**<font color=red>覆盖索引</font>**）
 
-- 全文索引，MylSAM支持，Innodb在5.6支持
+- 全文索引，MylSAM支持，InnoDB 在5.6支持
 
   全文索引的索引类型为FULLTEXT。全文索引可以在varchar、char、text类型上创建
 
@@ -52,19 +52,125 @@ Mysql索引有五种类型：主键索引、唯一索引、普通索引、全文
 
 ## 4 索引机制
 
-待整理。。。
+索引存储的是[key, value]，key是建立索引的数据列，value是存储的数据域。
+
+### 4.1 MylSAM
+
+索引和数据分别存储。
+
+- 表定义存在.frm文件中（每个存储引擎都会有）
+- 表中数据存在.MYD文件中
+- 索引存在.MYI文件中。
+
+MyIASM引擎的数据域内容是数据**实际物理地址**，这种与实际数据分离的索引即是**非聚集索引**。 
+
+![image-20201214001244061](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201214001244061.png)
+
+### 4.2 InnoDB
+
+ InnoDB引擎的[key, value]中，value存储的是**实际数据**，这种索引也叫**聚集索引**。
+
+![image-20201214001657057](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201214001657057.png)
+
+聚集索引这种实现方式使得按主键的搜索十分高效，但是辅助索引搜索需要检索两遍索引**：首先检索辅助索引获得主键，然后用主键到主索引中检索获得记录**。
 
 ## 5 索引维护
 
-![image-20200711003628332](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/20200711003628.png)
+索引在插入新值的时候，为了维护索引的有序性，必须要维护，在维护索引的时候需要分以下几种情况：
+
+1. 如果插入一个比较大的值，直接插入即可，几乎没有成本
+
+2. 如果删除的是中间的某一个值，需要逻辑上移动后续的元素，空出位置。
+
+3. 如果需要插入的数据页满了，就需要单独申请一个新的数据页，然后移动部分数据过去，叫做**页分裂**，此时性能会受影响同时空间的使用率也降低，除了页分裂还包括页合并。
+
+   大致的过程，详细的百度：
+
+   页分裂：
+
+   ![image-20201214204635035](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201214204635035.png)
+
+   页合并
+
+   ![image-20201214204923705](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201214204923705.png)
+
+4. 索引
+
+**尽量使用自增主键作为索引。**
 
 ## 6 索引面试难点
 
 - 回表
+
+  ![image-20201214202908221](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201214202908221.png)
+
 - 覆盖索引
+
+  主要针对InnoDB，现有一张表，除了id为主键索引，name为普通索引
+
+  ![image-20201214210219292](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201214210219292.png)
+
+  回表和覆盖索引
+
+  ![image-20201214210350373](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201214210350373.png)
+
 - 最左前缀
+
+  最左优先，以最左边的为起点任何连续的索引都能匹配上。同时遇到范围查询(>、<、between、like)就会停止匹配。
+
+  建立联合索引一定要注意权衡，假设一张表有
+
+  ```sql
+  id name age address
+  ```
+
+  四个字段：
+
+  1. 经常使用name和age进行检索，可以将name和age建立联合索引
+
+  2. 除了name和age经常使用，也经常检索age，如何建立索引？
+
+     - name和age建立一套索引，age建立一套索引，此方法浪费空间，不好
+
+     - 建立联合索引age和name，此时使用到最左匹配原则，可以充分利用索引
+
+  3. 除了name和age经常使用，也经常单独检索age和name，如何建立索引？
+
+     - name&age建立联合索引，age建立普通索引
+     - age&name建立联合索引，name建立普通索引
+
+     上面两种情况联合索引占用空间基本一致，那么该选择哪一个呢？
+
+     一般情况下，name占用空间大于age，所以选择第一种可以减少索引占用空间。
+
 - 索引下推
 
+  索引下推（index condition pushdown ）简称ICP，在**Mysql5.6**的版本上推出，用于优化查询。
 
+  - 在不使用ICP的情况下，在使用**非主键索引（又叫普通索引或者二级索引）**进行查询时，存储引擎通过索引检索到数据，然后返回给MySQL服务器，服务器然后判断数据是否符合条件 。
+  - 在使用ICP的情况下，如果存在某些被索引的列的判断条件时，MySQL服务器将这一部分判断条件传递给存储引擎，然后由存储引擎通过判断索引是否符合MySQL服务器传递的条件，只有当索引符合条件时才会将数据检索出来返回给MySQL服务器 。
 
-！！！多看几遍！！！
+  二级索引：叶子节点中存储主键值，每次查找数据时，根据索引找到叶子节点中的主键值，根据主键值再到聚簇索引中得到完整的一行记录。唯一索引、普通索引、前缀索引等都是二级索引。
+
+  
+
+  假设有一张表，有
+
+  ```sql
+  id name age address
+  ```
+
+  四个字段，查询如下语句
+
+  ```sql
+  SELECT * from user where  name = 'zhangsan' and age = '10';
+  ```
+
+  ![image-20201214222213374](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201214222213374.png)
+
+  
+
+  ![image-20201214213859605](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201214213859605.png)
+
+  
+
