@@ -1,5 +1,3 @@
-[TOC]
-
 # 索引优化
 
 ## 1 索引的基本知识
@@ -17,18 +15,63 @@
 3. 如果表具有多列索引，则优化器可以使用索引的任何最左前缀查找行
 4. 当有表连接的时候，则其他表索引行数据
 5. 查找特定索引列的min和max值
+6. 如果排序或分组时在可用索引的最左前缀上完成的，则对表进行排序和分组
+7. 在某些情况下，可以优化查询以检索值而无需查询数据行
 
 ### 1.3 索引的分类
 
+索引的分类
+
+- 主键索引
+
+- 唯一索引
+
+- 普通索引
+
+- 全文索引
+
+- 组合索引
+
 ### 1.4 索引的数据结构
 
+索引的数据结构和存储引擎有关
+
+- hash表：memory内存使用hash表
+- B+树：MySQL使用B+树
+
 ### 1.5 索引匹配方式
+
+新建表staffs
+
+```sql
+CREATE TABLE `staffs` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(24) NOT NULL DEFAULT '' COMMENT '姓名',
+	`age` INT(11) NOT NULL DEFAULT '0' COMMENT '年龄',
+	`pos` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '职位',
+	`add_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '入职时间',
+	PRIMARY KEY (`id`),
+	INDEX `idx_nap` (`name`, `age`, `pos`)
+)
+COMMENT='员工记录表'
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB
+;
+--------
+alter table staffs add index idx_nap(name, age, pos);
+```
+
+显示所有索引：
+
+- id是主键索引
+
+- idx_nap是组合索引
 
 ![image-20200810224703468](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200810224703468.png)
 
 #### 1.5.1 全值匹配
 
-全值匹配指的是和索引中的所有的列进行匹配
+全值匹配指的是和索引中的所有的列（案例是 (`name`, `age`, `pos`)）进行匹配，效率高
 
 ```sql
 explain select * from staffs where name = 'July' and age = '23' and pos = 'dev';
@@ -97,7 +140,7 @@ explain select * from staffs where name = 'July' and pos > 25;
 查询的时候只需要访问索引，不需要访问数据行，本质上就是覆盖索引
 
 ```sql
-explain select name,age,pos from staffs where name = 'July' and age = 25 and pos = 'dev';
+explain select name, age, pos from staffs where name = 'July' and age = 25 and pos = 'dev';
 ```
 
 ![image-20200810233017183](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200810233017183.png)
@@ -168,7 +211,11 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC  DEFAULT CHARSET=binary;
 ```
 
+
+
 **如果b是范围查找，不管c是不是索引列，都会忽略掉，不会参与运算**
+
+**情景：**
 
 1. 使用列a，`type:ref`表示引用查找，`key_len:4`表示索引长度为4
 
@@ -264,7 +311,7 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 
 #### 4.1.2 缺点
 
-1. 
+1. 聚簇数据最大限度地提高了IO密集型应用的性能，如果数据全部在内存，那么聚簇索引就没有什么优势
 2. 插入速度严重依赖于插入顺序，按照主键的顺序插入是最快的方式（页分裂、页合并）
 3. 更新聚簇索引列的代价很高，因为会强制将每个被更新的行移动到新的位置
 4. 基于聚簇索引的表插入新行，或者主键被更新导致需要移动行的时候，可能面临也分裂的问题
@@ -282,7 +329,62 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 2. 不是所有类型的索引都可以称为覆盖索引，覆盖索引必须要存储索引列的值
 3. 不同的存储实现覆盖索引的方式不同，不是所有的引擎都支持覆盖索引，memory不支持覆盖索引
 
+### 5.2 优势
 
+1. 索引条目通常远小于数据行大小，如果只需要读取索引，那么MySQL就会极大的较少数据访问量
+
+2. 因为索引是按照列值顺序存储的，所以对于IO密集型的范围查询会比随机从磁盘读取每一行数据的IO要少的多
+
+3. 一些存储引擎如MYISAM在内存中只缓存索引，数据则依赖于操作系统来缓存，因此要访问数据需要一次系统调用，这可能会导致严重的性能问题
+
+4. 由于INNODB的聚簇索引，覆盖索引对INNODB表特别有用
+
+### 5.3 案例
+
+1. 当发起一个被索引覆盖的查询时，在explain的extra列可以看到using index的信息，此时就使用了覆盖索引。
+
+   表结构
+
+   ```sql
+   CREATE TABLE `inventory` (
+   	`inventory_id` MEDIUMINT(8) UNSIGNED NOT NULL AUTO_INCREMENT,
+   	`film_id` SMALLINT(5) UNSIGNED NOT NULL,
+   	`store_id` TINYINT(3) UNSIGNED NOT NULL,
+   	`last_update` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   	PRIMARY KEY (`inventory_id`) USING BTREE,
+   	INDEX `idx_fk_film_id` (`film_id`) USING BTREE,
+   	INDEX `idx_store_id_film_id` (`store_id`, `film_id`) USING BTREE,
+   	CONSTRAINT `fk_inventory_store` FOREIGN KEY (`store_id`) REFERENCES `sakila`.`store` (`store_id`) ON UPDATE CASCADE ON DELETE RESTRICT,
+   	CONSTRAINT `fk_inventory_film` FOREIGN KEY (`film_id`) REFERENCES `sakila`.`film` (`film_id`) ON UPDATE CASCADE ON DELETE RESTRICT
+   )
+   COLLATE='utf8mb4_general_ci'
+   ENGINE=InnoDB
+   AUTO_INCREMENT=4582
+   ;
+   ```
+
+   ![image-20201215205053425](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215205053425.png)
+
+2. 在大多数存储引擎中，覆盖索引只能覆盖那些只访问索引中部分列的查询。不过，可以进一步的进行优化，可以使用innodb的二级索引来覆盖查询。
+
+   例如：actor使用innodb存储引擎，并在last_name字段用二级索引，虽然该索引的列不包括主键actor_id，但也能够用于对actor_id做覆盖查询。
+
+   ```sql
+   CREATE TABLE `actor` (
+   	`actor_id` SMALLINT(5) UNSIGNED NOT NULL AUTO_INCREMENT,
+   	`first_name` VARCHAR(45) NOT NULL COLLATE 'utf8mb4_general_ci',
+   	`last_name` VARCHAR(45) NOT NULL COLLATE 'utf8mb4_general_ci',
+   	`last_update` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   	PRIMARY KEY (`actor_id`) USING BTREE,
+   	INDEX `idx_actor_last_name` (`last_name`) USING BTREE
+   )
+   COLLATE='utf8mb4_general_ci'
+   ENGINE=InnoDB
+   AUTO_INCREMENT=201
+   ;
+   ```
+
+   ![image-20201215205621828](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215205621828.png)
 
 ## 6  优化细节
 
@@ -304,9 +406,9 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 
 ### 6.3 使用前缀索引
 
-有时候需要索引很长的字符串，这会让索引变的大且慢，通常情况下可以使用某个列开始的部分字符串，这样大大的节约索引空间，从而提高索引效率，但这会降低索引的选择性，索引的选择性是指不重复的索引值和数据表记录总数的比值，范围从1/#T到1之间。索引的选择性越高则查询效率越高，因为选择性更高的索引可以让mysql在查找的时候过滤掉更多的行。
+有时候需要索引很长的字符串，这会让索引变的大且慢，通常情况下可以使用某个列开始的部分字符串，这样大大的节约索引空间，从而提高索引效率，但这会降低索引的选择性，索引的选择性是指不重复的索引值和数据表记录总数的比值，范围从`1/T ~ 1`之间。索引的选择性越高则查询效率越高，因为选择性更高的索引可以让MySQL在查找的时候过滤掉更多的行。
 
-一般情况下某个列前缀的选择性也是足够高的，足以满足查询的性能，但是对应BLOB，TEXT，VARCHAR类型的列，必须要使用前缀索引，因为mysql不允许索引这些列的完整长度，使用该方法的诀窍在于要选择足够长的前缀以保证较高的选择性，通过又不能太长。
+一般情况下某个列前缀的选择性也是足够高的，足以满足查询的性能，但是对应BLOB，TEXT，VARCHAR类型的列，必须要使用前缀索引，因为MySQL不允许索引这些列的完整长度，使用该方法的诀窍在于要选择足够长的前缀以保证较高的选择性，通过又不能太长。
 
 #### 6.3.1 前缀索引案例演示
 
@@ -331,192 +433,96 @@ MySQL官方数据库sakila
    update citydemo set city = (select city from city order by rand() limit 1);
    ```
 
+   此时数据库一共有19200条数据。
+
+   ![image-20201215210312811](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210312811.png)
+
 4. 查找最常见的城市列表，每个值重复40-60次
 
    ```sql
-   mysql> select count(*) as cnt, city from citydemo group by city order by cnt desc limit 10;
-   +-----+-------------------------+
-   | cnt | city                    |
-   +-----+-------------------------+
-   |  60 | Allappuzha (Alleppey)   |
-   |  52 | Berhampore (Baharampur) |
-   |  48 | Molodetno               |
-   |  48 | London                  |
-   |  48 | Balurghat               |
-   |  47 | Cape Coral              |
-   |  47 | Basel                   |
-   |  47 | Kowloon and New Kowloon |
-   |  47 | Kirovo-Tepetsk          |
-   |  46 | Tianjin                 |
-   +-----+-------------------------+
-   10 rows in set (0.03 sec)
+   MySQL> select count(*) as cnt, city from citydemo group by city order by cnt desc limit 10;
    ```
-
+   
+   ![image-20201215210458711](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210458711.png)
+   
 5. 查找最频繁出现的城市前缀
 
    - 3个前缀字母
 
      ```sql
-     mysql> select count(*) as cnt, left(city, 3) as pref from citydemo group by pref order by cnt desc limit 10;
-     +-----+------+
-     | cnt | pref |
-     +-----+------+
-     | 444 | San  |
-     | 191 | Cha  |
-     | 186 | al-  |
-     | 159 | Tan  |
-     | 145 | Sha  |
-     | 140 | Sal  |
-     | 138 | Sou  |
-     | 128 | Hal  |
-     | 128 | Shi  |
-     | 124 | Bat  |
-     +-----+------+
-     10 rows in set (0.01 sec)
+     MySQL> select count(*) as cnt, left(city, 3) as pref from citydemo group by pref order by cnt desc limit 10;
      ```
-
+     
+     ![image-20201215210643747](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210643747.png)
+     
    - 4个前缀字母
-
+   
      ```sql
-     mysql> select count(*) as cnt, left(city, 4) as pref from citydemo group by pref order by cnt desc limit 10;
-     +-----+------+
-     | cnt | pref |
-     +-----+------+
-     | 207 | Sant |
-     | 175 | San  |
-     | 107 | Sout |
-     | 105 | Chan |
-     |  92 | Toul |
-     |  81 | al-Q |
-     |  71 | Hami |
-     |  69 | Vall |
-     |  67 | La P |
-     |  67 | Sain |
-     +-----+------+
-     10 rows in set (0.01 sec)
+     MySQL> select count(*) as cnt, left(city, 4) as pref from citydemo group by pref order by cnt desc limit 10;
      ```
-
+     
+     ![image-20201215210713184](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210713184.png)
+     
    - 5个前缀字母
-
-     ```sq
-     mysql> select count(*) as cnt, left(city, 5) as pref from citydemo group by pref order by cnt desc limit 10;
-     +-----+-------+
-     | cnt | pref  |
-     +-----+-------+
-     | 123 | Santa |
-     | 107 | South |
-     |  81 | al-Qa |
-     |  71 | Chang |
-     |  69 | Valle |
-     |  67 | Saint |
-     |  64 | Toulo |
-     |  60 | Allap |
-     |  59 | San F |
-     |  59 | Shimo |
-     +-----+-------+
-     10 rows in set (0.02 sec)
-     ```
-
-   - 6个前缀字母
-
+   
      ```sql
-     mysql> select count(*) as cnt, left(city, 6) as pref from citydemo group by pref order by cnt desc limit 10;
-     +-----+--------+
-     | cnt | pref   |
-     +-----+--------+
-     | 123 | Santa  |
-     |  69 | Valle  |
-     |  60 | Allapp |
-     |  59 | San Fe |
-     |  57 | Santia |
-     |  52 | Berham |
-     |  48 | Balurg |
-     |  48 | Molode |
-     |  48 | London |
-     |  47 | Kowloo |
-     +-----+--------+
-     10 rows in set (0.02 sec)
+     MySQL> select count(*) as cnt, left(city, 5) as pref from citydemo group by pref order by cnt desc limit 10;
      ```
+  ```
+     
+  ![image-20201215210747211](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210747211.png)
+     
+   - 6个前缀字母
+   
+     ```sql
+     MySQL> select count(*) as cnt, left(city, 6) as pref from citydemo group by pref order by cnt desc limit 10;
+  ```
+
+     ![image-20201215210813920](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210813920.png)
 
    - 7个前缀字母
-
+   
      ```sql
-     mysql> select count(*) as cnt, left(city, 7) as pref from citydemo group by pref order by cnt desc limit 10;
-     +-----+---------+
-     | cnt | pref    |
-     +-----+---------+
-     |  69 | Valle d |
-     |  60 | Allappu |
-     |  59 | San Fel |
-     |  57 | Santiag |
-     |  52 | Berhamp |
-     |  48 | London  |
-     |  48 | Balurgh |
-     |  48 | Molodet |
-     |  47 | Kirovo- |
-     |  47 | Kowloon |
-     +-----+---------+
-     10 rows in set (0.02 sec)
+     MySQL> select count(*) as cnt, left(city, 7) as pref from citydemo group by pref order by cnt desc limit 10;
      ```
-
+     
+     ![image-20201215210841373](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210841373.png)
+     
    - 8个前缀字母
 
      ```sql
-     mysql> select count(*) as cnt, left(city, 8) as pref from citydemo group by pref order by cnt desc limit 10;
-     +-----+----------+
-     | cnt | pref     |
-     +-----+----------+
-     |  69 | Valle de |
-     |  60 | Allappuz |
-     |  59 | San Feli |
-     |  57 | Santiago |
-     |  52 | Berhampo |
-     |  48 | Molodetn |
-     |  48 | London   |
-     |  48 | Balurgha |
-     |  47 | Cape Cor |
-     |  47 | Kowloon  |
-     +-----+----------+
-     10 rows in set (0.02 sec)
+    MySQL> select count(*) as cnt, left(city, 8) as pref from citydemo group by pref order by cnt desc limit 10;
      ```
+     
+     ![](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210917768.png)
 
-     综上，7个前缀字母的选择性接近于完整列的选择性
+   综上，7个前缀字母的选择性接近于完整列的选择性
 
 6. 计算完成之后可以创建前缀索引
 
    ```sql
    alter table citydemo add key(city(7));
    
-   mysql> show index from citydemo;
-   +----------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
-   | Table    | Non_unique | Key_name | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment |
-   +----------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
-   | citydemo |          1 | city     |            1 | city        | A         |         596 |        7 | NULL   |      | BTREE      |         |               |
-   +----------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
-   1 row in set (0.00 sec)
+   MySQL> show index from citydemo;
    ```
-
-   里面的Cardinality含义：基数
-
-   经常使用HyperLogLog算法
-
+   
+   ![](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215211208958.png)
+   
+   里面的Cardinality含义：基数，经常使用HyperLogLog算法
+   
 7. 还可以通过另外一种方式计算完整列的选择性，可以看到当前缀长度到达7之后，再增加前缀长度，选择性提升的幅度已经很小了
 
    ```sql
-   mysql> select count(distinct left(city,3))/count(*) as sel3,
+   MySQL> select count(distinct left(city,3))/count(*) as sel3,
        -> count(distinct left(city,4))/count(*) as sel4,
        -> count(distinct left(city,5))/count(*) as sel5,
        -> count(distinct left(city,6))/count(*) as sel6,
        -> count(distinct left(city,7))/count(*) as sel7,
        -> count(distinct left(city,8))/count(*) as sel8
        -> from citydemo;
-   +--------+--------+--------+--------+--------+--------+
-   | sel3   | sel4   | sel5   | sel6   | sel7   | sel8   |
-   +--------+--------+--------+--------+--------+--------+
-   | 0.0239 | 0.0293 | 0.0305 | 0.0309 | 0.0310 | 0.0310 |
-   +--------+--------+--------+--------+--------+--------+
-   1 row in set (0.06 sec)
    ```
+
+   ![image-20201215211552483](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215211552483.png)
 
 ### 6.4 利用索引扫描来排序
 
@@ -529,9 +535,9 @@ MySQL有两种方式可以生成有序的结果
 
 扫描索引本身是很快的，因为只需要从一条索引记录移动到紧接着下一条记录。但如果索引不能覆盖查询所需的全部列，那么就不得不每扫描一条索引记录就得回表查询一次对应的行，这基本都是随机IO，因此按照索引顺序读取数据的速度通常要比顺序地全表扫描慢。
 
-mysql可以使用同一个索引即满足排序，又用于查找行，如果可能的话，设计索引时应该尽可能地同时满足这两种任务。
+MySQL可以使用同一个索引即满足排序，又用于查找行，如果可能的话，设计索引时应该尽可能地同时满足这两种任务。
 
-只有当索引的列顺序和order by子句的顺序完全一致，并且所有列的排序方式都一样时，mysql才能够使用索引来对结果进行排序，如果查询需要关联多张表，则只有当order by子句引用的字段全部为第一张表时，才能使用索引做排序。order by子句和查找型查询的限制是一样的，需要满足索引的最左前缀的要求，否则，mysql都需要执行顺序操作，而无法利用索引排序。
+只有当索引的列顺序和order by子句的顺序完全一致，并且所有列的排序方式都一样时，MySQL才能够使用索引来对结果进行排序，如果查询需要关联多张表，则只有当order by子句引用的字段全部为第一张表时，才能使用索引做排序。order by子句和查找型查询的限制是一样的，需要满足索引的最左前缀的要求，否则，MySQL都需要执行顺序操作，而无法利用索引排序。
 
 #### 6.4.1 索引扫描案例
 
@@ -566,7 +572,7 @@ AUTO_INCREMENT=16050
 1. 使用rental_date为下面的查询做排序
 
    ```sql
-   mysql> explain select rental_id,staff_id from rental where rental_date = '2005-05-25' order by inventory_id, customer_id\G
+   MySQL> explain select rental_id, staff_id from rental where rental_date = '2005-05-25' order by inventory_id, customer_id\G
    *************************** 1. row ***************************
               id: 1
      select_type: SIMPLE
@@ -583,12 +589,12 @@ AUTO_INCREMENT=16050
    1 row in set, 1 warning (0.02 sec)
    ```
 
-   Extra: Using index condition，使用了index条件。rental_date是一个常量，order by是inventory_id和customer_id，不会用到索引，不能排序，
+   Extra: Using index condition，使用了index条件。rental_date是一个常量，order by是inventory_id和customer_id，不会用到索引，不能排序。
 
 2. 该查询为索引的第一列提供了常量条件，而使用第二列进行排序，将两个列组合在一起，就形成了索引的最左前缀
 
    ```sql
-   mysql> explain select rental_id,staff_id from rental where rental_date='2005-05-25' order by inventory_id desc\G
+   MySQL> explain select rental_id,staff_id from rental where rental_date='2005-05-25' order by inventory_id desc\G
    *************************** 1. row ***************************
               id: 1
      select_type: SIMPLE
@@ -608,7 +614,7 @@ AUTO_INCREMENT=16050
 3. 没用到索引
 
    ```sql
-   mysql> explain select rental_id,staff_id from rental where rental_date>'2005-05-25' order by rental_date,inventory_id\G
+   MySQL> explain select rental_id,staff_id from rental where rental_date>'2005-05-25' order by rental_date, inventory_id\G
    *************************** 1. row ***************************
               id: 1
      select_type: SIMPLE
@@ -632,7 +638,7 @@ AUTO_INCREMENT=16050
    - inventory_id desc, customer_id desc 能使用
 
    ```sql
-   mysql> explain select rental_id,staff_id from rental where rental_date>'2005-05-25' order by inventory_id desc,customer_id asc\G
+   MySQL> explain select rental_id,staff_id from rental where rental_date>'2005-05-25' order by inventory_id desc,customer_id asc\G
    *************************** 1. row ***************************
               id: 1
      select_type: SIMPLE
@@ -649,10 +655,10 @@ AUTO_INCREMENT=16050
    1 row in set, 1 warning (0.00 sec)
    ```
 
-5. 该查询中引用了一个不再索引中的列
+5. 该查询中引用了一个不在索引中的列
 
    ```sql
-   mysql> explain select rental_id,staff_id from rental where rental_date > '2005-05-25' order by inventory_id, staff_id\G
+   MySQL> explain select rental_id,staff_id from rental where rental_date > '2005-05-25' order by inventory_id, staff_id\G
    *************************** 1. row ***************************
               id: 1
      select_type: SIMPLE
@@ -681,7 +687,7 @@ union all,in,or都能够使用索引，但是推荐使用in
 1. union
 
    ```sql
-   mysql> explain select * from actor where actor_id = 1 union all select * from actor where actor_id = 2\G;
+   MySQL> explain select * from actor where actor_id = 1 union all select * from actor where actor_id = 2\G;
    *************************** 1. row ***************************
               id: 1
      select_type: PRIMARY
@@ -717,7 +723,7 @@ union all,in,or都能够使用索引，但是推荐使用in
 2. in
 
    ```sql
-   mysql> explain select * from actor where actor_id in (1, 2)\G;
+   MySQL> explain select * from actor where actor_id in (1, 2)\G;
    *************************** 1. row ***************************
               id: 1
      select_type: SIMPLE
@@ -740,7 +746,7 @@ union all,in,or都能够使用索引，但是推荐使用in
 3. or
 
    ```sql
-   mysql> explain select * from actor where actor_id = 1 or actor_id = 2\G;
+   MySQL> explain select * from actor where actor_id = 1 or actor_id = 2\G;
    *************************** 1. row ***************************
               id: 1
      select_type: SIMPLE
@@ -783,7 +789,7 @@ ENGINE=InnoDB
 不发生强制类型转换，触发索引
 
 ```sql
-mysql> explain select * from user where phone= '13800001234'\G;
+MySQL> explain select * from user where phone= '13800001234'\G;
 *************************** 1. row ***************************
            id: 1
   select_type: SIMPLE
@@ -806,7 +812,7 @@ No query specified
 发生强制类型转换，不触发索引
 
 ```sql
-mysql> explain select * from user where phone = 13800001234\G;
+MySQL> explain select * from user where phone = 13800001234\G;
 *************************** 1. row ***************************
            id: 1
   select_type: SIMPLE
@@ -842,10 +848,10 @@ No query specified
 
 当需要进行表连接的时候，最好不要超过三张表，因为需要join的字段，数据类型必须一致
 
-官网算法：https://dev.mysql.com/doc/refman/8.0/en/nested-loop-joins.html
+官网算法：https://dev.MySQL.com/doc/refman/8.0/en/nested-loop-joins.html
 
 ```sql
-mysql> show variables like '%join_buffer%';
+MySQL> show variables like '%join_buffer%';
 +------------------+--------+
 | Variable_name    | Value  |
 +------------------+--------+
@@ -861,10 +867,10 @@ mysql> show variables like '%join_buffer%';
 如果能明确知道只有一条返回结果，limit能够提高效率
 
 ```sql
-mysql> select ename from emp where empno = 7369;
-mysql> select ename from emp where empno = 7369 limit 1;
+MySQL> select ename from emp where empno = 7369;
+MySQL> select ename from emp where empno = 7369 limit 1;
 
-mysql> show profiles;
+MySQL> show profiles;
 +----------+------------+--------------------------------------------------+
 | Query_ID | Duration   | Query                                            |
 +----------+------------+--------------------------------------------------+
@@ -895,12 +901,12 @@ limit时间明显比较短
 
 ## 7 索引监控
 
-官网地址：https://dev.mysql.com/doc/refman/8.0/en/index-extensions.html
+官网地址：https://dev.MySQL.com/doc/refman/8.0/en/index-extensions.html
 
 索引监控参数
 
 ```sql
-mysql> show status like 'Handler_read%';
+MySQL> show status like 'Handler_read%';
 +-----------------------+-------+
 | Variable_name         | Value |
 +-----------------------+-------+
@@ -919,13 +925,13 @@ mysql> show status like 'Handler_read%';
 
 ### 7.1 参数解释
 
-官网地址：https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_optimizer_switch
+官网地址：https://dev.MySQL.com/doc/refman/8.0/en/server-system-variables.html#sysvar_optimizer_switch
 
 1. Handler_read_first
 
    读取索引第一个条目的次数
 
-2. Handler_read_key
+2. **Handler_read_key**
 
    通过index获取数据的次数
 
@@ -945,7 +951,7 @@ mysql> show status like 'Handler_read%';
 
    从固定位置读取数据的次数
 
-7. Handler_read_rnd_next
+7. **Handler_read_rnd_next**
 
    从数据节点读取下一条数据的次数
 

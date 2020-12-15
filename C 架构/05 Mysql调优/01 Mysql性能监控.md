@@ -2,7 +2,7 @@
 
 ## 1 监控工具一：show profile
 
-Mysql官网：https://dev.mysql.com/doc/refman/8.0/en/show-profile.html
+MySQL官网：https://dev.MySQL.com/doc/refman/8.0/en/show-profile.html
 
 ### 1.1 show profile all
 
@@ -17,7 +17,7 @@ show profile all for query 3;
 
 
 ```mysql
-mysql> show profile for query 3;
+MySQL> show profile for query 3;
 +----------------------+----------+
 | Status               | Duration |
 +----------------------+----------+
@@ -43,11 +43,11 @@ mysql> show profile for query 3;
 
 ## 2 监控工具二：Performance Schema
 
-Mysql官网：https://dev.mysql.com/doc/refman/8.0/en/performance-schema.html
+MySQL官网：https://dev.MySQL.com/doc/refman/8.0/en/performance-schema.html
 
 ### 2.1 performance_schema介绍
 
-Mysql的Performance Schema用于监控Mysql server在一个较低级别的运行过程中的资源消耗、资源等待等情况。
+MySQL的Performance Schema用于监控MySQL server在一个较低级别的运行过程中的资源消耗、资源等待等情况。
 
 1. 提供了一种在数据库运行时实时检查server的内部执行情况的方法。performance_schema 数据库中的表使用performance_schema存储引擎。该数据库主要关注数据库运行过程中的性能相关的数据，与information_schema不同，information_schema主要关注server运行过程中的元数据信息
 
@@ -173,6 +173,6 @@ show tables like '%setup%';
 
 ## 3 性能监控工具三：show processlist
 
-官网：https://dev.mysql.com/doc/refman/8.0/en/show-processlist.html
+官网：https://dev.MySQL.com/doc/refman/8.0/en/show-processlist.html
 
 ![image-20200808100428938](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200808100428938.png)

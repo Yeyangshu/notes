@@ -1,6 +1,6 @@
 # 分区表
 
-MySQL官网：https://dev.mysql.com/doc/refman/8.0/en/partitioning.html
+MySQL官网：https://dev.MySQL.com/doc/refman/8.0/en/partitioning.html
 
 ## 1 分区表的应用场景
 
@@ -41,15 +41,15 @@ MySQL官网：https://dev.mysql.com/doc/refman/8.0/en/partitioning.html
 
 4. update操作
 
-   当更新一条记录时，分区层先打开并锁住所有的底层表，mysql先确定需要更新的记录再哪个分区，然后取出数据并更新，再判断更新后的数据应该再哪个分区，最后对底层表进行写入操作，并对源数据所在的底层表进行删除操作
+   当更新一条记录时，分区层先打开并锁住所有的底层表，MySQL先确定需要更新的记录再哪个分区，然后取出数据并更新，再判断更新后的数据应该再哪个分区，最后对底层表进行写入操作，并对源数据所在的底层表进行删除操作
 
-有些操作时支持过滤的，例如，当删除一条记录时，MySQL需要先找到这条记录，如果where条件恰好和分区表达式匹配，就可以将所有不包含这条记录的分区都过滤掉，这对update同样有效。如果是insert操作，则本身就是只命中一个分区，其他分区都会被过滤掉。mysql先确定这条记录属于哪个分区，再将记录写入对应的分区表，无须对任何其他分区进行操作
+有些操作时支持过滤的，例如，当删除一条记录时，MySQL需要先找到这条记录，如果where条件恰好和分区表达式匹配，就可以将所有不包含这条记录的分区都过滤掉，这对update同样有效。如果是insert操作，则本身就是只命中一个分区，其他分区都会被过滤掉。MySQL先确定这条记录属于哪个分区，再将记录写入对应的分区表，无须对任何其他分区进行操作
 
 虽然每个操作都会“先打开并锁住所有的底层表”，但这并不是说分区表在处理过程中是锁住全表的，如果存储引擎能够自己实现行级锁，例如innodb，则会在分区层释放对应表锁。
 
 ## 4 分区表的类型
 
-官网：https://dev.mysql.com/doc/refman/8.0/en/partitioning-types.html
+官网：https://dev.MySQL.com/doc/refman/8.0/en/partitioning-types.html
 
 分库分表
 
@@ -186,7 +186,7 @@ MySQL官网：https://dev.mysql.com/doc/refman/8.0/en/partitioning.html
 
    **基于时间间隔的分区方案** 
 
-   1. 由分区表`RANGE`，以及用于分隔表达，使用上的一个功能的操作 [`DATE`](https://dev.mysql.com/doc/refman/8.0/en/datetime.html)， [`TIME`](https://dev.mysql.com/doc/refman/8.0/en/time.html)或 [`DATETIME`](https://dev.mysql.com/doc/refman/8.0/en/datetime.html)柱并返回一个整数值，如下所示：
+   1. 由分区表`RANGE`，以及用于分隔表达，使用上的一个功能的操作 [`DATE`](https://dev.MySQL.com/doc/refman/8.0/en/datetime.html)， [`TIME`](https://dev.MySQL.com/doc/refman/8.0/en/time.html)或 [`DATETIME`](https://dev.MySQL.com/doc/refman/8.0/en/datetime.html)柱并返回一个整数值，如下所示：
 
       ```sql
       CREATE TABLE members (
@@ -266,7 +266,7 @@ PARTITION BY LIST(store_id) (
 
 ### 4.3 列分区
 
-mysql从5.5开始支持column分区，可以认为i是range和list的升级版，在5.5之后，可以使用column分区替代range和list，但是column分区只接受普通列不接受表达式
+MySQL从5.5开始支持column分区，可以认为i是range和list的升级版，在5.5之后，可以使用column分区替代range和list，但是column分区只接受普通列不接受表达式
 
 ```sql
  CREATE TABLE `list_c` (
@@ -316,7 +316,7 @@ PARTITIONS 4;
 
 ### 4.5 key分区
 
-类似于hash分区，区别在于key分区只支持一列或多列，且mysql服务器提供其自身的哈希函数，必须有一列或多列包含整数值
+类似于hash分区，区别在于key分区只支持一列或多列，且MySQL服务器提供其自身的哈希函数，必须有一列或多列包含整数值
 
 `KEY`只接受零个或多个列名的列表
 
