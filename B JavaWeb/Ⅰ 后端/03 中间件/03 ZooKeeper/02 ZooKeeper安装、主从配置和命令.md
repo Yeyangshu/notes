@@ -1,4 +1,4 @@
-# 安装和使用
+# ZooKeeper安装和命令
 
 ## 1 安装并设置环境变量
 
@@ -94,11 +94,11 @@ cat zookeeper/myid
 
 设置环境变量
 
- ```
+```properties
 #set ZooKeeper environment
-export ZOOKEEPER_HOME=/opt/soft/zookeeper-3.4.10
-export PATH=$PATH:$ZOOKEEPER_HOME/bin
- ```
+export ZOOKEEPER_HOME = /opt/soft/zookeeper-3.4.10
+export PATH = $PATH:$ZOOKEEPER_HOME/bin
+```
 
 ## 2 启动
 
@@ -137,7 +137,7 @@ zkServer.sh status
 
 ![image-20200801172039973](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801172039973.png)
 
-### 2.2 客户端命令行启动
+### 2.2 客户端命令
 
 ```
 zkCli.sh
@@ -162,6 +162,8 @@ zkCli.sh
 
 #### 2.2.3 create
 
+![image-20200801175304765](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801175304765.png)
+
 ```
 cZxid：该数据节点被创建时的事务id
 0x：16进制
@@ -171,32 +173,6 @@ cZxid：该数据节点被创建时的事务id
 mZxid：该数据节点被修改时最新的事物id
 PZxid：当前节点的父级节点事务id
 ```
-
-zookeeper源码-State(czxid、mzxid..)节点数据结构
-
-```java
-
-@InterfaceAudience.Public
-public class Stat implements Record {
-  private long czxid; // 该数据节点被创建时的事务id
-  private long mzxid; // 该数据节点被修改时最新的事物id
-  private long ctime; // 该数据节点创建时间
-  private long mtime; // 该数据节点最后修改时间
-  private int version; // 当前节点版本号（可以理解为修改次数，每修改一次值+1）
-  private int cversion;// 子节点版本号（子节点修改次数，每修改一次值+1）
-  private int aversion; // 当前节点acl版本号（acl节点被修改次数，每修改一次值+1）
-  private long ephemeralOwner; // 临时节点标示，当前节点如果是临时节点，则存储的创建者的会话id（sessionId），如果不是，那么值=0
-  private int dataLength;// 当前节点数据长度
-  private int numChildren; // 当前节点子节点个数
-  private long pzxid; // 当前节点的父级节点事务id
-  public Stat() {
-  }
-}
-```
-
-
-
-![image-20200801175304765](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801175304765.png)
 
 ##### create -e 临时节点
 
@@ -220,7 +196,7 @@ session创建会消耗一个事务id
 
 ![image-20200801184351073](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801184351073.png)
 
-再连接一个客户端2，什么都不做，此时会创建一个session id
+再连接一个客户端2，什么都不做，此时也会创建一个session id
 
 ![image-20200801184445883](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200801184445883.png)
 
@@ -262,7 +238,7 @@ ZooKeeper可以使用create -s来保证节点不重复 ，每个节点都会有�
 
 -s 可以做以下
 
-- 分布式命名规则
+- 分布式统一命名规则，分布式ID
 
 ## 3 主从连接
 
