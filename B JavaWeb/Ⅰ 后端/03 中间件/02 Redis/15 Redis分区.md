@@ -72,7 +72,7 @@ Nginx代理不作为数据库存储，所以是无状态的，可以做集群
 
 
 
-## 2 Redis集群
+## 2 Redis分片
 
 twitter教程：https://github.com/twitter/twemproxy
 
@@ -112,7 +112,7 @@ http://redis.cn/topics/partitioning.html
 
 
 
-## 3 Redis实战
+## 3 Redis分片实战
 
 ### 3.1 twemproxy
 

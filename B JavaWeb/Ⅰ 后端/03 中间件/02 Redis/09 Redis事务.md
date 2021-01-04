@@ -1,6 +1,8 @@
-# 事务
+# Redis 事务
 
 Redis中文官网：http://redis.cn/topics/transactions.html
+
+Spring中使用事物：https://docs.spring.io/spring-data/redis/docs/2.4.2/reference/html/#tx
 
 将一组命令放在同一个事务中进行处理
 
@@ -16,7 +18,7 @@ MULTI、EXEC、DISCARD和WATCH是Redis食物相关的命令。事务可以一次
 
   事务中的所有命令要么全部被执行，要么全部都不执行。
 
-EXEC命令负责触发并执行事务中的所有的命令
+EXEC 命令负责触发并执行事务中的所有的命令
 
 - 如果客户端在使用 MULTI 开启了一个事物，却因为断线而没有成功执行 EXEC，那么事务中的所有命令都不会被执行。
 - 如果客户端成功在开启事务之后执行 EXEC，那么事务中的所有命令都会被执行。
@@ -57,13 +59,13 @@ EXEC：执行事务中所有在排队等待的指令并将链接状态恢复到�
 
 - 返回值：每个元素与原子事务中的指令一一对应 当使用 WATCH 时，如果被终止，EXEC 则返回一个空的应答集合
 
-DISCARD：刷新一个事务中所有在排队等待的指令，并且将连接状态恢复到正常。如果已使用WATCH，DISCARD将释放所有被WATCH的key。
+DISCARD：刷新一个事务中所有在排队等待的指令，并且将连接状态恢复到正常。如果已使用WATCH，DISCARD将释放所有被 WATCH 的 key。
 
 - 返回值：所有返回都是 OK
 
-WATCH：标记所有指定的key 被监视起来，在事务中有条件的执行（乐观锁）。
+WATCH：标记所有指定的 key 被监视起来，在事务中有条件的执行（乐观锁）。
 
-- 返回值：始终为OK
+- 返回值：始终为 OK
 
 ### 2.2 事务用法
 

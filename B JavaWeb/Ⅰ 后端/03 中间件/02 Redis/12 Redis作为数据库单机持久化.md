@@ -192,50 +192,50 @@ Redis提供了不同级别的持久化方式：
 #### 2.2.1 AOF优点
 
 - 使用AOF会让Redis更加耐久：你可以使用不同的fsync策略；无fsync，每秒fsync，每次写的时候fsync，使用默认的每秒fsync策略，Redis的性能依旧很好（fsync是由后台线程进行处理的，主线程会尽力处理客户端请求），一旦出现故障，你最多丢失1秒的数据
-- AOF文件是一个只进行追加的日志文件，所以不需要写入seek，即使由于某些原因（磁盘空间已满，写的过程宕机等待）未执行完整的写入命令，你可可以使用`redis-check-新AOFaof`工具修复这些问题。
+- AOF文件是一个只进行追加的日志文件，所以不需要写入seek，即使由于某些原因（磁盘空间已满，写的过程宕机等待）未执行完整的写入命令，你可可以使用 `redis-check-aof` 工具修复这些问题。
 
-- Redis可以在AOF文件体积变得过大时，自动地在后台对AOF进行重写：重写后的新AOF文件包含了恢复当前数据集所需的最小命令集合。整个重写操作时绝对安全的，因为Redis在创建AOF文件的过程中，会继续将命令追加到现有的AOF文件里面，即使重写过程中发生停机，现有的AOF文件也不会丢失。而一旦新AOF文件创建完毕，Redis就会从旧AOF文件切换到新AOF文件，并开始对新AOF文件进行追加操作。
-  - AOF文件有序地保存了对数据库执行的所有写入操作，这些写入操作以Redis协议的格式保存，因此AOF文件的内容非常容易被人读懂，对文件进行分析（parse）也很轻松。导出（export）AOF文件也非常简单：举个例子，如果你不小心执行了FLUSHALL命令，但只要AOF文件未被重写，那么只要停止服务器，移除AOF文件末尾的FLUSHALL命令，并重启Redis，就可以将数据集恢复到FLUSHALL执行之前的状态。
+- Redis 可以在 AOF 文件体积变得过大时，自动地在后台对 AOF 进行重写：重写后的新 AOF 文件包含了恢复当前数据集所需的最小命令集合。整个重写操作时绝对安全的，因为 Redis 在创建 AOF 文件的过程中，会继续将命令追加到现有的 AOF 文件里面，即使重写过程中发生停机，现有的 AOF 文件也不会丢失。而一旦新 AOF 文件创建完毕，Redis 就会从旧 AOF 文件切换到新 AOF 文件，并开始对新 AOF 文件进行追加操作。
+  - AOF 文件有序地保存了对数据库执行的所有写入操作，这些写入操作以 Redis 协议的格式保存，因此 AOF 文件的内容非常容易被人读懂，对文件进行分析（parse）也很轻松。导出（export）AOF 文件也非常简单：举个例子，如果你不小心执行了 FLUSHALL 命令，但只要 AOF 文件未被重写，那么只要停止服务器，移除 AOF 文件末尾的 FLUSHALL 命令，并重启 Redis，就可以将数据集恢复到 FLUSHALL 执行之前的状态。
 
 #### 2.2.2 AOF缺点
 
-- 相同的数据集，AOF的体积通常要大于RDB文件的体积.
-- 根据所使用的fsync策略，AOF的速度可能慢于RDB。在一般情况下，每秒的fsync的性能依旧非常高，而关闭fsync可以让AOF的速度和RDB一样快，即使在高负荷之下也是如此。不过在处理巨大的写入载入时，RDB可以提供更有保证的最大延迟时间（latency）。
+- 相同的数据集，AOF 的体积通常要大于 RDB 文件的体积.
+- 根据所使用的 fsync 策略，AOF 的速度可能慢于 RDB。在一般情况下，每秒的 fsync 的性能依旧非常高，而关闭 fsync 可以让 AOF 的速度和 RDB 一样快，即使在高负荷之下也是如此。不过在处理巨大的写入载入时，RDB可以提供更有保证的最大延迟时间（latency）。
 
 
 #### 2.2.3 AOF工作原理
 
-AOF重写和RDB创建快照一样，都巧妙的利用了写时复制机制：
+AOF 重写和 RDB 创建快照一样，都巧妙的利用了写时复制机制：
 
-- Redis执行fork()，现在同时拥有父进程和子进程。
-- 子进程开始将新的AOF文件的内容写入到临时文件。
-- 对于所有新执行的写入命令，父进程一边将他们累积到一个内存缓存中，一边将这些改动追加到现有的AOF文件的末尾
+- Redis 执行 fork()，现在同时拥有父进程和子进程。
+- 子进程开始将新的 AOF 文件的内容写入到临时文件。
+- 对于所有新执行的写入命令，父进程一边将他们累积到一个内存缓存中，一边将这些改动追加到现有的 AOF 文件的末尾
 
 #### 2.2.4 持久化使用方式
 
-  Redis配置文件 `APPEND ONLY MODE` 部分介绍了AOF的配置
+  Redis 配置文件 `APPEND ONLY MODE` 部分介绍了 AOF 的配置
 
   ```properties
-  # 是否开启AOF，默认关闭（no）
-  appendonly yes
-  
-  # 指定 AOF 文件名
-  appendfilename appendonly.aof
-  
-  # Redis支持三种不同的刷写模式：
-  # appendfsync always #每次收到写命令就立即强制写入磁盘，是最有保证的完全的持久化，但速度也是最慢的，一般不推荐使用。
-  appendfsync everysec #每秒钟强制写入磁盘一次，在性能和持久化方面做了很好的折中，是受推荐的方式。
-  # appendfsync no     #完全依赖OS的写入，一般为30秒左右一次，性能最好但是持久化最没有保证，不被推荐。
-  
-  #在日志重写时，不进行命令追加操作，而只是将其放在缓冲区里，避免与命令的追加造成DISK IO上的冲突。
-  #设置为yes表示rewrite期间对新写操作不fsync,暂时存在内存中,等rewrite完成后再写入，默认为no
-  no-appendfsync-on-rewrite no 
-  
-  #当前AOF文件大小是上次日志重写得到AOF文件大小的二倍时，自动启动新的日志重写过程。
-  auto-aof-rewrite-percentage 100
-  
+# 是否开启AOF，默认关闭（no）
+appendonly yes
+
+# 指定 AOF 文件名
+appendfilename appendonly.aof
+
+# Redis支持三种不同的刷写模式：
+# appendfsync always #每次收到写命令就立即强制写入磁盘，是最有保证的完全的持久化，但速度也是最慢的，一般不推荐使用。
+appendfsync everysec #每秒钟强制写入磁盘一次，在性能和持久化方面做了很好的折中，是受推荐的方式。
+# appendfsync no     #完全依赖OS的写入，一般为30秒左右一次，性能最好但是持久化最没有保证，不被推荐。
+
+#在日志重写时，不进行命令追加操作，而只是将其放在缓冲区里，避免与命令的追加造成DISK IO上的冲突。
+#设置为yes表示rewrite期间对新写操作不fsync,暂时存在内存中,等rewrite完成后再写入，默认为no
+no-appendfsync-on-rewrite no 
+
+#当前AOF文件大小是上次日志重写得到AOF文件大小的二倍时，自动启动新的日志重写过程。
+auto-aof-rewrite-percentage 100
+
 #当前AOF文件启动新的日志重写过程的最小值，避免刚刚启动Reids时由于文件尺寸较小导致频繁的重写。
-  auto-aof-rewrite-min-size 64mb
+auto-aof-rewrite-min-size 64mb
   ```
 
   

@@ -55,7 +55,7 @@ https://www.cnblogs.com/shidian/p/11589626.html
    cd /usr/local/mysql/bin/
    
    # 初始化，目录要和配置文件保持一致
-   ./mysqld --defaults-file=/etc/my.cnf --basedir=/usr/local/mysql/ --datadir==/usr/local/mysql/data --user=mysql --initialize
+   ./mysqld --defaults-file=/etc/my.cnf --basedir=/usr/local/mysql/ --datadir=/usr/local/mysql/data --user=mysql --initialize
    
    # 查看密码
    cat mysql.err | grep password
@@ -71,6 +71,9 @@ https://www.cnblogs.com/shidian/p/11589626.html
    
    # 启动
    service mysql start
+   
+   # 开机自启
+   chkconfig mysql on
    ```
 
 9. 修改密码

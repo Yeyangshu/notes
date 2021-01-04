@@ -1,251 +1,69 @@
+# ZooKeeper API 使用
 
-
-pom.xml
-
-```xml
-<!-- https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper -->
-<dependency>
-    <groupId>org.apache.zookeeper</groupId>
-    <artifactId>zookeeper</artifactId>
-    <version>3.4.6</version>
-</dependency>
-
-```
-
-第一类
+## 1 同步
 
 ```java
-public class ZooKeeperApp {
-    public static void main(String[] args) throws IOException, InterruptedException {
-        // zk是有session概念的，没有连接池的概念
-        // watch（观察、回调）分为两类
-        //      第一类：new zk时传入的
-        ZooKeeper zk = new ZooKeeper("192.168.163.111:2181,192.168.163.112:2181,192.168.163.113:2181,192.168.163.114:2181",
-                3000, new Watcher() {
-            // watch的回调方法
-            @Override
-            public void process(WatchedEvent event) {
-                Event.KeeperState state = event.getState();
-                Event.EventType type = event.getType();
-                String path = event.getPath();
-                System.out.println(event.toString());
-
-                switch (state) {
-                    case Unknown:
-                        break;
-                    case Disconnected:
-                        break;
-                    case NoSyncConnected:
-                        break;
-                    case SyncConnected:
-                        System.out.println("connected");
-                        cd.countDown();
-                        break;
-                    case AuthFailed:
-                        break;
-                    case ConnectedReadOnly:
-                        break;
-                    case SaslAuthenticated:
-                        break;
-                    case Expired:
-                        break;
-                }
-
-                switch (type) {
-                    case None:
-                        break;
-                    case NodeCreated:
-                        break;
-                    case NodeDeleted:
-                        break;
-                    case NodeDataChanged:
-                        break;
-                    case NodeChildrenChanged:
-                        break;
-                }
-            }
-        });
-
-        ZooKeeper.States state = zk.getState();
-        switch (state) {
-            case CONNECTING:
-                System.out.println("ing......");
-                break;
-            case ASSOCIATING:
-                break;
-            case CONNECTED:
-                System.out.println("ed......");
-                break;
-            case CONNECTEDREADONLY:
-                break;
-            case CLOSED:
-                break;
-            case AUTH_FAILED:
-                break;
-            case NOT_CONNECTED:
-                break;
-        }
-
-    }
-}
-
-控制台：
-    ing......
-```
-
-
-
-
-
-```java
-public class ZooKeeperApp {
-    public static void main(String[] args) throws IOException, InterruptedException {
-        // zk是有session概念的，没有连接池的概念
-        // watch（观察、回调）分为两类
-        //      第一类：new zk时传入的
-        final CountDownLatch cd = new CountDownLatch(1);
-        ZooKeeper zk = new ZooKeeper("192.168.163.111:2181,192.168.163.112:2181,192.168.163.113:2181,192.168.163.114:2181",
-                3000, new Watcher() {
-            // watch的回调方法
-            @Override
-            public void process(WatchedEvent event) {
-                Event.KeeperState state = event.getState();
-                Event.EventType type = event.getType();
-                String path = event.getPath();
-                System.out.println(event.toString());
-
-                switch (state) {
-                    case Unknown:
-                        break;
-                    case Disconnected:
-                        break;
-                    case NoSyncConnected:
-                        break;
-                    case SyncConnected:
-                        System.out.println("connected");
-                        cd.countDown();
-                        break;
-                    case AuthFailed:
-                        break;
-                    case ConnectedReadOnly:
-                        break;
-                    case SaslAuthenticated:
-                        break;
-                    case Expired:
-                        break;
-                }
-
-                switch (type) {
-                    case None:
-                        break;
-                    case NodeCreated:
-                        break;
-                    case NodeDeleted:
-                        break;
-                    case NodeDataChanged:
-                        break;
-                    case NodeChildrenChanged:
-                        break;
-                }
-            }
-        });
-
-        cd.await();
-        ZooKeeper.States state = zk.getState();
-        switch (state) {
-            case CONNECTING:
-                System.out.println("ing......");
-                break;
-            case ASSOCIATING:
-                break;
-            case CONNECTED:
-                System.out.println("ed......");
-                break;
-            case CONNECTEDREADONLY:
-                break;
-            case CLOSED:
-                break;
-            case AUTH_FAILED:
-                break;
-            case NOT_CONNECTED:
-                break;
-        }
-
-    }
-}
-
-控制台：
-    WatchedEvent state:SyncConnected type:None path:null
-    connected
-	ed......
-```
-
-
-
-```java
-public class ZooKeeperApp {
+public class APP {
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
-        // zk是有session概念的，没有连接池的概念
-        // watch（观察、回调）分为两类
-        // watch的调用只发生在读类型调用，get、exeits
-        //      第一类：new zk时传入的
-        final CountDownLatch cd = new CountDownLatch(1);
-        ZooKeeper zk = new ZooKeeper("192.168.163.111:2181,192.168.163.112:2181,192.168.163.113:2181,192.168.163.114:2181",
-                3000, new Watcher() {
-            // watch的回调方法
-            @Override
-            public void process(WatchedEvent event) {
-                Event.KeeperState state = event.getState();
-                Event.EventType type = event.getType();
-                String path = event.getPath();
-                System.out.println(event.toString());
+        // ZooKeeper是有session概念的，没有连接池的概念
+        // watch分为两类：new ZooKeeper()时，传入的watch，session级别的，跟path、node没有关系
+        // watch的注册只发生在读类型调用，get、exists......
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        final ZooKeeper zooKeeper = new ZooKeeper("127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183,127.0.0.1:2184", 3000,
+                new Watcher() {
+                    // watch的回调方法
+                    public void process(WatchedEvent event) {
+                        Event.KeeperState state = event.getState();
+                        Event.EventType type = event.getType();
+                        String path = event.getPath();
+                        System.out.println("new ZooKeeper watch：" + event.toString());
 
-                switch (state) {
-                    case Unknown:
-                        break;
-                    case Disconnected:
-                        break;
-                    case NoSyncConnected:
-                        break;
-                    case SyncConnected:
-                        System.out.println("connected");
-                        cd.countDown();
-                        break;
-                    case AuthFailed:
-                        break;
-                    case ConnectedReadOnly:
-                        break;
-                    case SaslAuthenticated:
-                        break;
-                    case Expired:
-                        break;
-                }
+                        switch (state) {
+                            case Unknown:
+                                break;
+                            case Disconnected:
+                                break;
+                            case NoSyncConnected:
+                                break;
+                            case SyncConnected:
+                                countDownLatch.countDown();
+                                System.out.println("connected");
+                                break;
+                            case AuthFailed:
+                                break;
+                            case ConnectedReadOnly:
+                                break;
+                            case SaslAuthenticated:
+                                break;
+                            case Expired:
+                                break;
+                        }
 
-                switch (type) {
-                    case None:
-                        break;
-                    case NodeCreated:
-                        break;
-                    case NodeDeleted:
-                        break;
-                    case NodeDataChanged:
-                        break;
-                    case NodeChildrenChanged:
-                        break;
-                }
-            }
-        });
+                        switch (type) {
+                            case None:
+                                break;
+                            case NodeCreated:
+                                break;
+                            case NodeDeleted:
+                                break;
+                            case NodeDataChanged:
+                                break;
+                            case NodeChildrenChanged:
+                                break;
+                        }
+                    }
+                });
 
-        cd.await();
-        ZooKeeper.States state = zk.getState();
-        switch (state) {
+        countDownLatch.await();
+        ZooKeeper.States states = zooKeeper.getState();
+        switch (states) {
             case CONNECTING:
-                System.out.println("ing......");
+                System.out.println("CONNECTING...");
                 break;
             case ASSOCIATING:
                 break;
             case CONNECTED:
-                System.out.println("ed......");
+                System.out.println("CONNECTED...");
                 break;
             case CONNECTEDREADONLY:
                 break;
@@ -257,176 +75,134 @@ public class ZooKeeperApp {
                 break;
         }
 
-        // 创建节点
-        String pathName = zk.create("/ooxx", "olddata".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-        Stat stat = new Stat();
-        // 取值并注册watch
-        byte[] node = zk.getData("/ooxx", new Watcher() {
-            @Override
-            public void process(WatchedEvent event) {
-                System.out.println("getData watch：" + event.toString());
-            }
-        }, stat);
+        // 创建目录
+        String pathName = zooKeeper.create("/yeyangshu", "old data".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        // 注册监控，获取目录，同时创建watch，如果被观察节点发生变化，异步线程进行回调
+        final Stat stat = new Stat();
+        byte[] node = zooKeeper.getData("/yeyangshu",
+                new Watcher() {
+                    public void process(WatchedEvent event) {
+                        System.out.println("getData watch：" + event.toString());
+                    }
+                }, stat);
         System.out.println(new String(node));
-        // 修改ooxx节点，触发回调
-        Stat stat1 = zk.setData("/ooxx", "newdata".getBytes(), 0);
-        // 还会触发吗
-        Stat stat2 = zk.setData("/ooxx", "newdata".getBytes(), stat1.getVersion());
+
+        // 修改数据，会触发上面的回调
+        Stat stat1 = zooKeeper.setData("/yeyangshu", "new data".getBytes(), 0);
+        // 再进行修改，还会触发回调吗？不会，watch是一次性的
+        Stat stat2 = zooKeeper.setData("/yeyangshu", "new data01".getBytes(), stat1.getVersion());
     }
 }
-控制台：
-    WatchedEvent state:SyncConnected type:None path:null
-    connected
-    ed......
-    olddata
-    getData watch：WatchedEvent state:SyncConnected type:NodeDataChanged path:/ooxx
 ```
 
-3s钟之内可以看到数据，3s之后不见数据
+控制台打印
 
-![image-20200803233759002](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200803233759002.png)
+```
+new ZooKeeper watch：WatchedEvent state:SyncConnected type:None path:null
+connected
+CONNECTED...
+old data
+getData watch：WatchedEvent state:SyncConnected type:NodeDataChanged path:/yeyangshu
+```
 
-怎样再去回调？继续监控
+如果想获取完节点信息后继续 watch 节点，有两种情况：
+
+1. 参数为布尔，使用new ZooKeeper()的那个watch， `zooKeeper.getData("/yeyangshu", true, stat);`
+
+   ```java
+   final Stat stat = new Stat();
+   byte[] node = zooKeeper.getData("/yeyangshu",
+                                   new Watcher() {
+                                       public void process(WatchedEvent event) {
+                                           try {
+                                               // true，是default watch，被重新注册，new ZooKeeper()的那个watch
+                                               zooKeeper.getData("/yeyangshu", true, stat);
+                                           } catch (KeeperException e) {
+                                               e.printStackTrace();
+                                           } catch (InterruptedException e) {
+                                               e.printStackTrace();
+                                           }
+                                           System.out.println("getData watch：" + event.toString());
+                                       }
+                                   }, stat);
+   ```
+
+   控制台打印：
+
+   ```
+   new ZooKeeper watch：WatchedEvent state:SyncConnected type:None path:null
+   connected
+   CONNECTED...
+   old data
+   getData watch：WatchedEvent state:SyncConnected type:NodeDataChanged path:/yeyangshu
+   new ZooKeeper watch：WatchedEvent state:SyncConnected type:NodeDataChanged path:/yeyangshu
+   connected
+   ```
+
+2. 参数为 watch，使用刚刚的 watch， `zooKeeper.getData("/yeyangshu", this, stat);`
+
+   ```java
+   final Stat stat = new Stat();
+   byte[] node = zooKeeper.getData("/yeyangshu",
+                                   new Watcher() {
+                                       public void process(WatchedEvent event) {
+                                           try {
+                                               // this，使用刚刚的watch
+                                               zooKeeper.getData("/yeyangshu", this, stat);
+                                           } catch (KeeperException e) {
+                                               e.printStackTrace();
+                                           } catch (InterruptedException e) {
+                                               e.printStackTrace();
+                                           }
+                                           System.out.println("getData watch：" + event.toString());
+                                       }
+                                   }, stat);
+   ```
+
+   控制台打印：
+
+   ```
+   new ZooKeeper watch：WatchedEvent state:SyncConnected type:None path:null
+   connected
+   CONNECTED...
+   old data
+   getData watch：WatchedEvent state:SyncConnected type:NodeDataChanged path:/yeyangshu
+   getData watch：WatchedEvent state:SyncConnected type:NodeDataChanged path:/yeyangshu
+   ```
+
+## 2 异步
 
 ```java
-public class ZooKeeperApp {
-    public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
-        // zk是有session概念的，没有连接池的概念
-        // watch（观察、回调）分为两类
-        // watch的调用只发生在读类型调用，get、exeits
-        //      第一类：new zk时传入的
-        final CountDownLatch cd = new CountDownLatch(1);
-        ZooKeeper zk = new ZooKeeper("192.168.163.111:2181,192.168.163.112:2181,192.168.163.113:2181,192.168.163.114:2181",
-                3000, new Watcher() {
-            // watch的回调方法
-            @Override
-            public void process(WatchedEvent event) {
-                Event.KeeperState state = event.getState();
-                Event.EventType type = event.getType();
-                String path = event.getPath();
-                System.out.println("new zk watch：" + event.toString());
-
-                switch (state) {
-                    case Unknown:
-                        break;
-                    case Disconnected:
-                        break;
-                    case NoSyncConnected:
-                        break;
-                    case SyncConnected:
-                        System.out.println("connected");
-                        cd.countDown();
-                        break;
-                    case AuthFailed:
-                        break;
-                    case ConnectedReadOnly:
-                        break;
-                    case SaslAuthenticated:
-                        break;
-                    case Expired:
-                        break;
-                }
-
-                switch (type) {
-                    case None:
-                        break;
-                    case NodeCreated:
-                        break;
-                    case NodeDeleted:
-                        break;
-                    case NodeDataChanged:
-                        break;
-                    case NodeChildrenChanged:
-                        break;
-                }
-            }
-        });
-
-        cd.await();
-        ZooKeeper.States state = zk.getState();
-        switch (state) {
-            case CONNECTING:
-                System.out.println("ing......");
-                break;
-            case ASSOCIATING:
-                break;
-            case CONNECTED:
-                System.out.println("ed......");
-                break;
-            case CONNECTEDREADONLY:
-                break;
-            case CLOSED:
-                break;
-            case AUTH_FAILED:
-                break;
-            case NOT_CONNECTED:
-                break;
-        }
-
-        // 创建节点
-        String pathName = zk.create("/ooxx", "olddata".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-        Stat stat = new Stat();
-        // 取值并注册watch
-        byte[] node = zk.getData("/ooxx", new Watcher() {
-            @Override
-            public void process(WatchedEvent event) {
-                System.out.println("getData watch：" + event.toString());
-                try {
-                    // true default watch 被重新注册 new zk的哪个watch
-                    zk.getData("/ooxx", true, stat);
-                } catch (KeeperException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, stat);
-        System.out.println(new String(node));
-        // 修改ooxx节点，触发回调
-        Stat stat1 = zk.setData("/ooxx", "newdata".getBytes(), 0);
-        // 还会触发吗
-        Stat stat2 = zk.setData("/ooxx", "newdata".getBytes(), stat1.getVersion());
+// 接上面的代码
+// 异步调用
+System.out.println("async start");
+new AsyncCallback.DataCallback() {
+    // 回调方法
+    @Override
+    public void processResult(int rc, String path, Object ctx, byte[] data, Stat stat) {
+        System.out.println("async call back");
+        System.out.println(ctx.toString());
+        System.out.println(new String(data));
     }
-}
-控制台：
-        new zk watch：WatchedEvent state:SyncConnected type:None path:null
-    connected
-    ed......
-    olddata
-    getData watch：WatchedEvent state:SyncConnected type:NodeDataChanged path:/ooxx
-    new zk watch：WatchedEvent state:SyncConnected type:NodeDataChanged path:/ooxx
-    connected
+}, "abc");
+System.out.println("async over");
 ```
 
+控制台打印
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```
+new ZooKeeper watch：WatchedEvent state:SyncConnected type:None path:null
+connected
+CONNECTED...
+old data
+getData watch：WatchedEvent state:SyncConnected type:NodeDataChanged path:/yeyangshu
+getData watch：WatchedEvent state:SyncConnected type:NodeDataChanged path:/yeyangshu
+async start
+async over
+async call back
+abc
+new data01
+```
 
 
 

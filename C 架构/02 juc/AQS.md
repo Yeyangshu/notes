@@ -1,4 +1,8 @@
-# AQS
+# AbstractQueueSynchronizer
+
+AQS是一个同步器+阻塞锁的基本架构，用于控制加锁和释放锁，并在内部维护一个FIFO（First In First Out，先进先出）的线程等待队列。
+
+![image-20201230224537906](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201230224537906.png)
 
 ## 1 基本实现原理
 
