@@ -3,14 +3,19 @@
 动态代理的实现方式（必考）
 
 - jdk动态代
-
 - cglib借助asm
+
+### 为什么需要代理模式？
+
+谈谈对SpringAOP Weaving（织入）的理解？
 
 Spring的IOC/AOP的实现（必考）
 
 Spring如何解决循环依赖（三级缓存）（必考）
 
 Spring的@Transactional如何实现的（必考）
+
+讲解Spring 框架中如何基于 AOP 实现的事务管理？
 
 1、Spring的底层代码，
 

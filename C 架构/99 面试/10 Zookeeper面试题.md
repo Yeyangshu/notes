@@ -8,7 +8,7 @@
 
 ZAB（ZooKeeper Atomic Broadcast）即ZooKeeper原子消息广播协议。该协议主要通过唯一的事务编号Zxid（ZooKeeper Transaction id）保障集群状态的唯一性。Zxid与RDBMS中的事务id类似，用于标识一次提议（Proposal）的id；为了保证顺序性，Zxid必须单调递增。
 
-1、Zookeeper如何保证可用性？
+### Zookeeper如何保证可用性？
 
 2、Zookeeper的原理
 
@@ -24,3 +24,6 @@ ZAB（ZooKeeper Atomic Broadcast）即ZooKeeper原子消息广播协议。该协
 
 Leader选举算法和流程
 
+ZooKeeper怎么解决脑裂问题
+
+ZooKeeper一致性协议（ZAB）
