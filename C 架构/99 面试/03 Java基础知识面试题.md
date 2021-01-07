@@ -229,9 +229,43 @@ cglib动态代理是利用asm，对代理类的class对象文件加载进来，�
 
 https://github.com/Snailclimb/JavaGuide/blob/master/docs/java/basis/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.md#13-%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B
 
-## 为什么 Java 中只有值传递？
+### 为什么 Java 中只有值传递？
 
-## 深拷贝 vs 浅拷贝
+### 深拷贝 vs 浅拷贝
+
+- 浅拷贝是创建一个新对象，这个对象有着原始对象属性值的一份精确拷贝。如果属性是基本类型，拷贝的就是基本类型的值，如果属性是引用类型，拷贝的就是内存地址 ，所以**如果其中一个对象改变了这个地址，就会影响到另一个对象**。
+
+- 深拷贝是将一个对象从内存中完整的拷贝一份出来,从堆内存中开辟一个新的区域存放新对象,且**修改新对象不会影响原对象**。
+
+### 反射的原理，反射创建类实例的三种方式是什么？
+
+java反射机制是在运行当中，对任意一个类来说，能够知道它的所有属性和方法，都能调用它的任意一个属性和方法。
+
+三种方式：getClass()方式，调用类的静态属性class，Class.forName()。
+
+- Class class1 = Foo.class;
+- Class class2 = foo1.getClass();
+- Class class3 = Class.forName("com.imooc.reflect.Foo");
+
+### Arrays.sort 实现原理和 Collections.sort 实现原理
+
+Collection.sort()底层会调用Arrays.sort()，Arrays.sort()底层实现是TimeSort，TimeSort的算法就是先找到已经排好序数据的子序列，然后对剩余部分数据进行排序，然后在合并起来。
+
+### foreach和while的区别(编译之后)
+
+while会读一行输入，把它存入某个变量并执行循环体，然后再找其他行的输入，适用于不确定循环次数的情况；foreach是增强for循环，它是逐条读取，在循环开始前会将所有输入全部读入，适用于数组、集合等确定长度的情况；当输入内容非常大的时候foreach会非常占内存。
+
+### 动态代理的几种方式
+
+jdk动态代理和cglib动态代理。jdk动态代理是有java内部的反射机制实现的，前提是代理类和目标类必须实现统一的接口；cglib动态代理是借助asm来实现的。
+
+### 反射中，Class.forName和ClassLoader区别
+
+java类加载的过程包括：加载->验证->准备->解析->初始化->使用->卸载，而初始化就是激活java类中静态变量初始化代码和静态代码块，并初始化程序设置的变量值。
+
+Class.forName会执行类的初始化，而ClassLoader不会执行类的初始化。
+
+
 
 ### 反射
 
