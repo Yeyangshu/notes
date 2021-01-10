@@ -316,11 +316,11 @@ Class.forName会执行类的初始化，而ClassLoader不会执行类的初始�
 
 ## 6 容器
 
-HashMap和ConcurrentHashMap区别（必考）
+### HashMap和ConcurrentHashMap区别（必考）
 
-ConcurrentHashMap的数据结构（必考）
+### ConcurrentHashMap的数据结构（必考）
 
-Atomic类如何保证原子性（CAS操作）（必考）
+### ArrayList是如何实现的，ArrayList和LinkedList的区别？ArrayList如何实现扩容。
 
 ### HashMap底层数据结构，以及解决hash碰撞的方法
 
@@ -335,6 +335,8 @@ Atomic类如何保证原子性（CAS操作）（必考）
 ### Java中的自增是线程安全的吗，如何实现线程安全的自增
 
 ### HashMap中jdk1.7与jdk1.8的区别
+
+### CopyOnWriteArrayList实现原理
 
 ## 7 异常处理
 
@@ -355,7 +357,7 @@ throws 关键字用在方法签名处，用来标识该方法可能抛出的异�
 
 ### BIO、NIO、AIO有什么区别?
 
-
+io/nio/bio差异和使用场景
 
 ## 9 1.8的新特性
 
