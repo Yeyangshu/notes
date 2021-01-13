@@ -205,15 +205,20 @@ Spring AOP采用的是动态代理，在**运行期间**对业务方法进行增
 
 ### Spring事务的传播属性？它会影响什么？Spring的事务隔离级别，实现原理
 
-七个事务传播属性
+七个事务传播属性，分为两大类
 
-- **PROPAGATION_REQUIRED** -- 支持当前事务，如果当前没有事务，就新建一个事务。这是最常见的选择。
-- **PROPAGATION_SUPPORTS** -- 支持当前事务，如果当前没有事务，就以非事务方式执行。
-- **PROPAGATION_MANDATORY** -- 支持当前事务，如果当前没有事务，就抛出异常。
-- **PROPAGATION_REQUIRES_NEW** -- 新建事务，如果当前存在事务，把当前事务挂起。
-- **PROPAGATION_NOT_SUPPORTED** -- 以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。
-- **PROPAGATION_NEVER** -- 以非事务方式执行，如果当前存在事务，则抛出异常。
-- **PROPAGATION_NESTED**--如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
+保证同一个事务中，支持外层事务
+
+- PROPAGATION_REQUIRED：支持当前事务，如果不存在就新建一个（默认）
+- PROPAGATION_SUPPORTS：支持当前事务，如果不存在就不使用事务，不使用事务执行
+- PROPAGATION_MANDATORY：支持当前事务，如果没有当前事务，就抛出异常
+
+保证没有在同一个事务中，不支持外层事务
+
+- PROPAGATION_REQUIRES_NEW：新建事务，如果当前存在事务，就把当前事务挂起
+- PROPAGATION_NOT_SUPPORTED：以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。
+- PROPAGATION_NEVER：以非事务方式执行，如果当前存在事务，则抛出异常。
+- PROPAGATION_NESTED：如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作。
 
 五种隔离级别
 
