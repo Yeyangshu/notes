@@ -12,11 +12,11 @@
 
 最大值
 
-### **consumerOffset**
+### consumerOffset
 
 消费者消费进度/位置
 
-### **diffTotal**
+### diffTotal
 
 消费积压/未被消费的消息数量
 

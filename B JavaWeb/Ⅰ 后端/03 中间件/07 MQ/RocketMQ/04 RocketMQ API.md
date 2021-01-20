@@ -134,7 +134,7 @@ consumer.subscribe("TopicTest", "TagA||TagB");
 
 消费者将收到包含 TAGA 或 TAGB B的消息. 但限制是一条消息只能有一个标签，而这对于复杂的情况可能无效。 在这种情况下，您可以使用SQL表达式筛选出消息.
 
-### 配置
+### 5.1 配置
 
 在 `broker.conf ` 中添加配置
 
@@ -152,7 +152,7 @@ enablePropertyFilter=true
 
 ![image-20200219174859476](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200219174859476.png)
 
-### 实例
+### 5.2 实例
 
 ```java
 // 发送端
@@ -166,7 +166,7 @@ MessageSelector messageSelector = MessageSelector.bySql("age >= 18 and age <= 28
 consumer.subscribe("myTopic01", messageSelector);
 ```
 
-### 语法
+### 5.3 语法
 
 RocketMQ只定义了一些基本的语法来支持这个功能。 你也可以很容易地扩展它.
 
@@ -192,7 +192,7 @@ RocketMQ使用**messageDelayLevel**可以设置延迟投递
 messageDelayLevel	1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h
 ```
 
-### 配置
+### 6.1 配置
 
 在`broker.conf `中添加配置
 
@@ -204,7 +204,7 @@ messageDelayLevel=1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h
 
 时间单位支持：s、m、h、d，分别表示秒、分、时、天；
 
-### 使用
+### 6.2 使用
 
 发送消息时设置
 
@@ -234,40 +234,92 @@ message.setDelayTimeLevel(1);
 - 队列内保证有序
 - 消费线程
 
+### 7.1 消费端
 
+可以设置线程池的个数
+
+```java
+consumer.setConsumeThreadMax(1);
+consumer.setConsumeThreadMin(1);
+```
+
+registerMessageListener可以选择两个MessageListener
+
+- MessageListenerConcurrently：并发，开启多个线程接收消息
+- MessageListenerOrderly：线程内有序，每个Queue只开启一个线程
+
+```java
+/**
+ * 并发的执行
+ * Register a callback to execute on message arrival for concurrent consuming.
+ *
+ * @param messageListener message handling callback.
+ */
+@Override
+public void registerMessageListener(MessageListenerConcurrently messageListener) {
+    this.messageListener = messageListener;
+    this.defaultMQPushConsumerImpl.registerMessageListener(messageListener);
+}
+
+/**
+ * 顺序的执行
+ * Register a callback to execute on message arrival for orderly consuming.
+ *
+ * @param messageListener message handling callback.
+ */
+@Override
+public void registerMessageListener(MessageListenerOrderly messageListener) {
+    this.messageListener = messageListener;
+    this.defaultMQPushConsumerImpl.registerMessageListener(messageListener);
+}
+```
+
+### 假如我有一个场景要保证消息的顺序，你们应该如何保证？
+
+- 同一topic
+
+- 同一个QUEUE
+
+- 发消息的时候一个线程去发送消息
+
+- 消费的时候 一个线程 消费一个queue里的消息或者使用MessageListenerOrderly
+
+- 多个queue 只能保证单个queue里的顺序
 
 ## 8 重试机制
 
-### producer
+### 8.1 producer
 
 **默认超时时间**
 
-```
-    /**
-     * Timeout for sending messages.
-     */
-    private int sendMsgTimeout = 3000;
+```java
+/**
+ * Timeout for sending messages.
+ */
+private int sendMsgTimeout = 3000;
+// 异步发送时 重试次数，默认 2
+producer.setRetryTimesWhenSendAsyncFailed(1);
+// 同步发送时 重试次数，默认 2
+producer.setRetryTimesWhenSendFailed(1);	
+// 是否向其他broker发送请求 默认false
+producer.setRetryAnotherBrokerWhenNotStoreOK(true);
 ```
 
-		// 异步发送时 重试次数，默认 2
-		producer.setRetryTimesWhenSendAsyncFailed(1);
-		// 同步发送时 重试次数，默认 2
-		producer.setRetryTimesWhenSendFailed(1);	
-		
-		// 是否向其他broker发送请求 默认false
-		producer.setRetryAnotherBrokerWhenNotStoreOK(true);
-
-### Consumer
+### 8.2 Consumer
 
 消费超时，单位分钟
 
-`consumer.setConsumeTimeout()`
+```
+consumer.setConsumeTimeout()
+```
 
 发送ack，消费失败
 
-`RECONSUME_LATER`
+```
+RECONSUME_LATER
+```
 
-### broker投递
+### 8.3 broker投递
 
 只有在消息模式为MessageModel.CLUSTERING集群模式时，Broker才会自动进行重试，广播消息不重试
 
@@ -287,7 +339,7 @@ RocketMQ 4.3+提供分布事务功能，通过 RocketMQ 事务消息能达到分
 
 ### 9.1 RocketMQ实现方式
 
-**Half Message：**预处理消息，当broker收到此类消息后，会存储到RMQ_SYS_TRANS_HALF_TOPIC的消息消费队列中
+**Half Message：**预处理消息，当broker收到此类消息后，会存储到 RMQ_SYS_TRANS_HALF_TOPIC 的消息消费队列中
 
 **检查事务状态：**Broker会开启一个定时任务，消费RMQ_SYS_TRANS_HALF_TOPIC队列中的消息，每次执行任务会向消息发送者确认事务执行状态（提交、回滚、未知），如果是未知，等待下一次回调。
 
@@ -295,25 +347,103 @@ RocketMQ 4.3+提供分布事务功能，通过 RocketMQ 事务消息能达到分
 
 ### 9.2 TransactionListener的两个方法
 
-#### executeLocalTransaction
+#### 9.2.1 executeLocalTransaction
 
 半消息发送成功触发此方法来执行本地事务
 
-#### checkLocalTransaction
+#### 9.2.2 checkLocalTransaction
 
 broker将发送检查消息来检查事务状态，并将调用此方法来获取本地事务状态
 
-#### 本地事务执行状态
+#### 9.2.3 本地事务执行状态
 
-**LocalTransactionState.COMMIT_MESSAGE**
+- **LocalTransactionState.COMMIT_MESSAGE**
 
-执行事务成功，确认提交
+  执行事务成功，确认提交
 
-**LocalTransactionState.ROLLBACK_MESSAGE**
+- **LocalTransactionState.ROLLBACK_MESSAGE**
 
-回滚消息，broker端会删除半消息
+  回滚消息，broker端会删除半消息
 
-**LocalTransactionState.UNKNOW**
+- **LocalTransactionState.UNKNOW**
 
-暂时为未知状态，等待broker回查
+  暂时为未知状态，等待broker回查
+
+```java
+package com.yeyangshu.rocketmq;
+
+import org.apache.rocketmq.client.producer.*;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageExt;
+
+/**
+ * 事务消息发送者
+ */
+public class TransactionProducer {
+
+    public static void main(String[] args) throws Exception {
+        // 事务消息
+        TransactionMQProducer producer = new TransactionMQProducer("rocketMQGroup");
+        // 设置nameserver地址
+        producer.setNamesrvAddr("127.0.0.1:9876");
+
+        producer.setTransactionListener(new TransactionListener() {
+            // 当发送事务性prepare（half）消息成功时，将调用此方法以执行本地事务。
+            public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
+                // 执行本地事务
+                // a()
+                // b() -> 发消息
+                // c()
+
+                try {
+                    // 业务代码
+                } catch (Exception e) {
+                    return LocalTransactionState.ROLLBACK_MESSAGE;
+                }
+                System.out.println("execute local transaction");
+                System.out.println("msg：" + new String(msg.getBody()));
+                System.out.println("msg：" + msg.getTransactionId());
+                return LocalTransactionState.COMMIT_MESSAGE;
+            }
+
+            // broker端回调检查，检察事务
+            // 没有响应准备（半）消息时。broker将发送check message以检查交易状态，并将调用此方法以获取本地交易状态。
+            public LocalTransactionState checkLocalTransaction(MessageExt msg) {
+                System.out.println("check local transaction");
+                System.out.println("msg：" + new String(msg.getBody()));
+                System.out.println("msg：" + msg.getTransactionId());
+
+                // LocalTransactionState.UNKNOW，等会
+                // LocalTransactionState.ROLLBACK_MESSAGE，回滚消息
+                // 事务成功消息
+                return LocalTransactionState.COMMIT_MESSAGE;
+            }
+        });
+
+        // 启动producer
+        producer.start();
+
+        Message message = new Message("myTopic01", "transaction message test".getBytes());
+        TransactionSendResult sendResult = producer.sendMessageInTransaction(message, null);
+        System.out.println(sendResult);
+
+    }
+}
+```
+
+producer结果
+
+```
+// LocalTransactionState.UNKNOW
+execute local transaction
+msg：transaction message test
+msg：1E2DA423000018B4AAC2657AA12F0000
+SendResult [sendStatus=SEND_OK, msgId=1E2DA423000018B4AAC2657AA12F0000, offsetMsgId=null, messageQueue=MessageQueue [topic=myTopic01, brokerName=M7099E11, queueId=0], queueOffset=2]
+// 回调LocalTransactionState.COMMIT_MESSAGE
+check local transaction
+msg：transaction message test
+msg：1E2DA423000018B4AAC2657AA12F0000
+```
+
+1
 
