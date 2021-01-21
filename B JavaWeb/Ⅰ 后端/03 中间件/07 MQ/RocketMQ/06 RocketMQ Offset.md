@@ -1,4 +1,16 @@
-# RocketMQ Offset
+# RocketMQ源码
+
+## Consumer源码
+
+### start启动流程
+
+DefaultMQPushConsumer
+
+### pullMessage消息拉取
+
+### putMessage
+
+
 
 ## Offset
 
@@ -55,12 +67,20 @@ Consumer -> Broker RocketMQ采用的长轮询建立连接
 
 #### 短轮询
 
-client不断发送请求到server，每次都需要重新连接
+client不断发送请求到server，每次都需要重新连接，一般基于HTTP协议
+
+![image-20210121224711761](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20210121224711761.png)
 
 #### 长轮询
 
-client发送请求到server，server有数据返回，没有数据请求挂起不断开连接
+client发送请求到server，server有数据返回，没有数据请求挂起不断开连接。
+
+长轮询通过客户端和服务端的配合，达到主动权在客户端，同时也能保证数据的实时性；长轮询本质上也是轮询，只不过对普通的轮询做了优化处理，服务端在没有数据的时候并不是马上返回数据，会hold住请求，等待服务端有数据，或者一直没有数据超时处理，然后一直循环下去；
+
+![image-20210121225548452](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20210121225548452.png)
 
 #### 长连接
 
-连接一旦建立，永远不断开，push方式推送
+连接一旦建立，永远不断开，Server主动push方式推送，一般基于WebSocket
+
+![image-20210121224740275](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20210121224740275.png)
