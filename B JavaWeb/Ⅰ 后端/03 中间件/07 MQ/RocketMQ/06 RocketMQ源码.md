@@ -84,3 +84,9 @@ client发送请求到server，server有数据返回，没有数据请求挂起�
 连接一旦建立，永远不断开，Server主动push方式推送，一般基于WebSocket
 
 ![image-20210121224740275](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20210121224740275.png)
+
+## Broker启动
+
+### BrokerStartup类
+
+## NameServer
