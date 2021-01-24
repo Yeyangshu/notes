@@ -260,22 +260,60 @@ Spring AOP采用的是动态代理，在**运行期间**对业务方法进行增
 
 ## 4 SpringCloud
 
-SpringCloud和dubbo的区别
+### SpringCloud和dubbo的区别
 
-项目中用到了哪些组件
+### 项目中用到了哪些组件
 
-eureka的原理，如何保证高可用性，和Zookeeper有什么区别
+### Eureka的原理，如何保证高可用性？
+
+集群同步
+
+![image-20210123102753019](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20210123102753019.png)
+
+
+
+![image-20210123102830117](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20210123102830117.png)
+
+### Springcloud eureka是如何注册服务、如何监测心跳的，它注册的流程是怎么样的？
+
+#### 服务注册
+
+![image-20210123103437130](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20210123103437130.png)
+
+#### 心跳机制
+
+在应用启动后，节点们将会向Eureka Server定时发送心跳，默认周期为30秒，如果Eureka Server在多个心跳周期内没有接收到某个节点的心跳，Eureka Server将会从服务注册表中把这个服务节点移除(默认90秒)。
+
+![image-20210123103746791](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20210123103746791.png)
+
+### Eureka和Zookeeper作为注册中心有什么区别
+
+#### Zookeeper保证CP
+
+当向注册中心查询服务列表时，我们可以容忍注册中心返回的是几分钟以前的注册信息，但不能接受服务直接down掉不可用。也就是说，**服务注册功能对可用性的要求要高于一致性**。但是zk会出现这样一种情况，当master节点因为网络故障与其他节点失去联系时，剩余节点会重新进行leader选举。问题在于，选举leader的时间太长，30 ~ 120s，且选举期间整个zk集群都是不可用的，这就导致在选举期间注册服务瘫痪。在云部署的环境下，因网络问题使得zk集群失去master节点是较大概率会发生的事，虽然服务能够最终恢复，但是漫长的选举时间导致的注册长期不可用是不能容忍的。
+
+#### Eureka保证AP
+
+Eureka看明白了这一点，因此在设计时就优先保证可用性。Eureka各个节点都是平等的，几个节点挂掉不会影响正常节点的工作，剩余的节点依然可以提供注册和查询服务。而Eureka的客户端在向某个Eureka注册或如果发现连接失败，则会自动切换至其它节点，只要有一台Eureka还在，就能保证注册服务可用(保证可用性)，只不过查到的信息可能不是最新的(不保证强一致性)。除此之外，Eureka还有一种自我保护机制，如果在15分钟内超过85%的节点都没有正常的心跳，那么Eureka就认为客户端与注册中心出现了网络故障，此时会出现以下几种情况：
+
+- Eureka不再从注册列表中移除因为长时间没收到心跳而应该过期的服务
+- Eureka仍然能够接受新服务的注册和查询请求，但是不会被同步到其它节点上(即保证当前节点依然可用)
+- 当网络稳定时，当前实例新的注册信息会被同步到其它节点中
+
+因此， Eureka可以很好的应对因网络故障导致部分节点失去联系的情况，而不会像zookeeper那样使整个注册服务瘫痪。
+
+
 
 feign如何调用的
 
 处理生产环境上配置生效问题
 
-hystrix的降级策略有哪些
+### Hystrix的降级策略有哪些
 
-Springcloud eureka是如何注册服务、如何监测心跳的，它注册的流程是怎么样的
+
 
 在分布式环境中如何快速发现某一台服务有问题
 
 分布式集群系统对外提供接口的时候如何验证对方的身份
 
-Eureka和zookeeper作为注册中心有什么区别
+## 
