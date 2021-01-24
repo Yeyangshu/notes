@@ -133,12 +133,11 @@ Kafka官方网址点击 -> DOWNLOAD KAFKA
 - 查看
 
   ```shell
-  [root@CentOSA kafka_2.11-2.2.0]# ./bin/kafka-topics.sh 				
-                                                  --bootstrap-server CentOSA:9092,CentOSB:9092,CentOSC:9092 
-  			       --list
+  [root@CentOSA kafka_2.11-2.2.0]# ./bin/kafka-topics.sh --bootstrap-server CentOSA:9092,CentOSB:9092,CentOSC:9092 --list
   
+  ./bin/kafka-topics.sh --bootstrap-server node02:9092,node03:9092,node04:9092 --list
   ```
-
+  
 - 详情
 
   ```shell
