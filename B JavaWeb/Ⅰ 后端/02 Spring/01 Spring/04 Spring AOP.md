@@ -4,7 +4,9 @@ AOP：Aspect Oriented Programming  面向切面编程
 
 OOP：Object Oriented Programming  面向对象编程
 
-面向切面编程：基于OOP基础之上新的编程思想，OOP面向的主要对象是类，而AOP面向的主要对象是切面，在处理日志、安全管理、事务管理等方面有非常重要的作用。AOP是Spring中重要的核心点，虽然IOC容器没有依赖AOP，但是AOP提供了非常强大的功能，用来对IOC做补充。通俗点说的话就是在程序运行期间，将**某段代码动态切入**到**指定方法**的**指定位置**进行运行的这种编程方式。
+面向切面编程：基于 OOP 基础之上新的编程思想，OOP 面向的主要对象是类，而 AOP 面向的主要对象是切面，在性能监控、处理日志、安全管理、事务管理等方面有非常重要的作用。
+
+AOP 是 Spring 中重要的核心点，虽然 IOC 容器没有依赖 AOP，但是 AOP 提供了非常强大的功能，用来对 IOC 做补充。通俗点说的话就是在程序运行期间，将**某段代码动态切入**到**指定方法**的**指定位置**进行运行的这种编程方式。
 
 ## 1 AOP的概念
 
@@ -184,13 +186,12 @@ import java.util.Arrays;
 public class CalculatorProxy {
 
     /**
-     *
-     *  为传入的参数对象创建一个动态代理对象
+     * 为传入的参数对象创建一个动态代理对象
+     * 
      * @param calculator 被代理对象
      * @return
      */
     public static Calculator getProxy(final Calculator calculator){
-
 
         //被代理对象的类加载器
         ClassLoader loader = calculator.getClass().getClassLoader();
@@ -198,6 +199,7 @@ public class CalculatorProxy {
         Class<?>[] interfaces = calculator.getClass().getInterfaces();
         //方法执行器，执行被代理对象的目标方法
         InvocationHandler h = new InvocationHandler() {
+            
             /**
              *  执行目标方法
              * @param proxy 代理对象，给jdk使用，任何时候都不要操作此对象
@@ -207,8 +209,8 @@ public class CalculatorProxy {
              * @throws Throwable
              */
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                //利用反射执行目标方法,目标方法执行后的返回值
-//                System.out.println("这是动态代理执行的方法");
+                // 利用反射执行目标方法,目标方法执行后的返回值
+                // System.out.println("这是动态代理执行的方法");
                 Object result = null;
                 try {
                     System.out.println(method.getName()+"方法开始执行，参数是："+ Arrays.asList(args));
@@ -219,7 +221,7 @@ public class CalculatorProxy {
                 } finally {
                     System.out.println(method.getName()+"方法执行结束了......");
                 }
-                //将结果返回回去
+                // 将结果返回回去
                 return result;
             }
         };
@@ -327,18 +329,40 @@ public class CalculatorProxy {
 }
 ```
 
-很多同学看到上述代码之后可能感觉已经非常完美了，但是要说明的是，这种动态代理的实现方式调用的是jdk的基本实现，如果需要代理的目标对象没有实现任何接口，那么是无法为他创建代理对象的，这也是致命的缺陷。而在Spring中我们可以不编写上述如此复杂的代码，只需要利用AOP，就能够轻轻松松实现上述功能，当然，Spring AOP的底层实现也依赖的是动态代理。
+很多同学看到上述代码之后可能感觉已经非常完美了，但是要说明的是，这种动态代理的实现方式调用的是 JDK 的基本实现，如果需要代理的目标对象没有实现任何接口，那么是无法为他创建代理对象的，这也是致命的缺陷。而在 Spring 中我们可以不编写上述如此复杂的代码，只需要利用 AOP，就能够轻轻松松实现上述功能，当然，Spring AOP 的底层实现也依赖的是动态代理。
 
 ### 1.2 AOP的核心概念及术语
 
 - 切面（Aspect）: 指关注点模块化，这个关注点可能会横切多个对象。事务管理是企业级Java应用中有关横切关注点的例子。 在Spring AOP中，切面可以使用通用类基于模式的方式（schema-based approach）或者在普通类中以`@Aspect`注解（@AspectJ 注解方式）来实现。
+
 - 连接点（Join point）: 在程序执行过程中某个特定的点，例如某个方法调用的时间点或者处理异常的时间点。在Spring AOP中，一个连接点总是代表一个方法的执行。
+
+  Spring中只支持方法连接点。
+
 - 通知（Advice）: 在切面的某个特定的连接点上执行的动作。通知有多种类型，包括“around”, “before” and “after”等等。通知的类型将在后面的章节进行讨论。 许多AOP框架，包括Spring在内，都是以拦截器做通知模型的，并维护着一个以连接点为中心的拦截器链。
+
 - 切点（Pointcut）: 匹配连接点的断言。通知和切点表达式相关联，并在满足这个切点的连接点上运行（例如，当执行某个特定名称的方法时）。切点表达式如何和连接点匹配是AOP的核心：Spring默认使用AspectJ切点语义。
+
 - 引入（Introduction）: 声明额外的方法或者某个类型的字段。Spring允许引入新的接口（以及一个对应的实现）到任何被通知的对象上。例如，可以使用引入来使bean实现 `IsModified`接口， 以便简化缓存机制（在AspectJ社区，引入也被称为内部类型声明（inter））。
+
 - 目标对象（Target object）: 被一个或者多个切面所通知的对象。也被称作被通知（advised）对象。既然Spring AOP是通过运行时代理实现的，那么这个对象永远是一个被代理（proxied）的对象。
+
 - AOP代理（AOP proxy）:AOP框架创建的对象，用来实现切面契约（aspect contract）（包括通知方法执行等功能）。在Spring中，AOP代理可以是JDK动态代理或CGLIB代理。
-- 织入（Weaving）: 把切面连接到其它的应用程序类型或者对象上，并创建一个被被通知的对象的过程。这个过程可以在编译时（例如使用AspectJ编译器）、类加载时或运行时中完成。 Spring和其他纯Java AOP框架一样，是在运行时完成织入的。
+
+- 织入（Weaving）: 把切面连接到其它的应用程序类型或者对象上，并创建一个被被通知的对象的过程。这个过程可以在编译时（例如使用AspectJ编译器）、类加载时或运行时中完成。 Spring 和其他纯 Java AOP 框架一样，是在运行时完成织入的。
+
+  AOP 有三种织入方式：
+
+  - 编译器织入：要求使用特殊的 Java 编译器
+  - 类装载织入：要求使用特殊的类装载器
+  - 动态代理织入：在运行期为目标类添加增强生成子类的方式
+
+  Spring 采用动态代理织入，而 AspectJ 采用编译期织入和类装载期织入。
+
+AOP的工作重心在于如何将增强应用于目标对象的连接点上。包括两项任务：
+
+- 如何通过切点和增强定位到连接点
+- 如何在增强中编写切面的代码
 
 ### 1.3 AOP的通知类型
 
