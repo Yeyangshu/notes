@@ -6,15 +6,15 @@
 
 1. 大大减少了服务器需要扫描的数据量
 2. 帮助服务器避免排序和临时表
-3. 将随机io变成顺序io
+3. 将随机 io 变成顺序 io
 
 ### 1.2 索引的用处
 
-1. 快速查找匹配WHERE子句的行
-2. 从consideration中消除行，如果可以在索引之间进行选择，MySQL通常会使用找到最少行的索引
+1. 快速查找匹配 WHERE 子句的行
+2. 从 consideration 中消除行，如果可以在索引之间进行选择，MySQL 通常会使用找到最少行的索引
 3. 如果表具有多列索引，则优化器可以使用索引的任何最左前缀查找行
 4. 当有表连接的时候，则其他表索引行数据
-5. 查找特定索引列的min和max值
+5. 查找特定索引列的 min 和 max 值
 6. 如果排序或分组时在可用索引的最左前缀上完成的，则对表进行排序和分组
 7. 在某些情况下，可以优化查询以检索值而无需查询数据行
 
@@ -36,12 +36,12 @@
 
 索引的数据结构和存储引擎有关
 
-- hash表：memory内存使用hash表
-- B+树：MySQL使用B+树
+- hash表：memory 内存使用 hash 表
+- B+树：MySQL 使用 B+ 树
 
 ### 1.5 索引匹配方式
 
-新建表staffs
+新建表 staffs
 
 ```sql
 CREATE TABLE `staffs` (
@@ -71,7 +71,7 @@ alter table staffs add index idx_nap(name, age, pos);
 
 #### 1.5.1 全值匹配
 
-全值匹配指的是和索引中的所有的列（案例是 (`name`, `age`, `pos`)）进行匹配，效率高
+全值匹配指的是和索引中的所有的列（案例是 (`name`,  `age`,  `pos`)）进行匹配，效率高
 
 ```sql
 explain select * from staffs where name = 'July' and age = '23' and pos = 'dev';
@@ -155,9 +155,9 @@ explain select name, age, pos from staffs where name = 'July' and age = 25 and p
 
    基于哈希表的实现，只有精确匹配索引所有列的查询才有效。（不能使用范围查找）
 
-2. 在MySQL中，只有memory的存储引擎显式支持哈希索引
+2. 在 MySQL 中，只有 memory 的存储引擎显式支持哈希索引
 
-3. 哈希索引自身只需要存储对应的hash值，所以索引的结构十分紧凑，这让哈希索引的查找的速度非常快
+3. 哈希索引自身只需要存储对应的 hash 值，所以索引的结构十分紧凑，这让哈希索引的查找的速度非常快
 
 ### 2.2 哈希索引的限制
 
@@ -177,13 +177,13 @@ explain select name, age, pos from staffs where name = 'July' and age = 25 and p
 
 ### 2.3 哈希案例
 
-当需要存储大量的URL，并且根据URL进行搜索查找，如果使用B+树，存储的内容就会很大
+当需要存储大量的 URL，并且根据 URL 进行搜索查找，如果使用 B+ 树，存储的内容就会很大
 
 ```sql
 select id from url where url = '';
 ```
 
-也可以利用将URL使用CRC32做哈希，可以使用以下查询方式：
+也可以利用将 URL 使用 CRC32 做哈希，可以使用以下查询方式：
 
 ```sql
 select id from url where url = '' and url crc = CRC32('');
@@ -211,13 +211,11 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC  DEFAULT CHARSET=binary;
 ```
 
-
-
 **如果b是范围查找，不管c是不是索引列，都会忽略掉，不会参与运算**
 
 **情景：**
 
-1. 使用列a，`type:ref`表示引用查找，`key_len:4`表示索引长度为4
+1. 使用列 a，`type:ref` 表示引用查找，`key_len:4` 表示索引长度为4
 
    ```sql
    explain select data from test_index where a = 1;
@@ -225,7 +223,7 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 
    ![image-20200811205124184](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200811205124184.png)
 
-2. 使用列b，`type:ALL`表示全表查找，`key_len:NULL`表示没有索引，不能使用索引来加快查找速度
+2. 使用列 b，`type:ALL`表示全表查找，`key_len:NULL` 表示没有索引，不能使用索引来加快查找速度
 
    ```sql
    explain select data from test_index where b = 1;
@@ -233,7 +231,7 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 
    ![image-20200811205152963](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200811205152963.png)
 
-3. 使用列c，`type:ALL`表示全表查找，`key_len:NULL`表示没有索引，不能使用索引来加快查找速度
+3. 使用列 c，`type:ALL` 表示全表查找，`key_len:NULL` 表示没有索引，不能使用索引来加快查找速度
 
    ```sql
    explain select data from test_index where c = 1;
@@ -241,7 +239,7 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 
    ![image-20200811205211418](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200811205211418.png)
 
-4. 使用列a和b，`type:ref`表示引用查找，`key_len:8`表示索引长度为8，`ref:const,const`，利用了a、b联合索引进行查找
+4. 使用列 a 和 b，`type:ref`表示引用查找，`key_len:8`表示索引长度为8，`ref:const,const`，利用了a、b联合索引进行查找
 
    ```sql
    explain select data from test_index where a = 1 and b = 1;
@@ -281,7 +279,7 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 
    ![image-20200811205351955](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200811205351955.png)
 
-8. a=1 and b > 10 and c = 1，`type:range`表示范围查找，`key_len:8`表示索引长度为8，`ref:null`，利用了a、b联合索引进行查找
+8. a=1 and b > 1 and c = 1，`type:range`表示范围查找，`key_len:8`表示索引长度为8，`ref:null`，利用了a、b联合索引进行查找
 
    ```sql
    explain select data from test_index where a = 1 and b > 1 and c = 1;
@@ -289,7 +287,7 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 
    ![image-20200811205410350](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200811205410350.png)
 
-9. a=1 and b > 10 and c = 1，`type:ref`表示引用查找，`key_len:4`表示索引长度为4，`ref:const`，只使用了a索引进行查找
+9. a=1 and b like '%1' and c = 1，`type:ref`表示引用查找，`key_len:4`表示索引长度为4，`ref:const`，只使用了a索引进行查找
 
    ```sql
    explain select data from test_index where a = 1 and b like '%1' and c = 1;
@@ -331,17 +329,17 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 
 ### 5.2 优势
 
-1. 索引条目通常远小于数据行大小，如果只需要读取索引，那么MySQL就会极大的较少数据访问量
+1. 索引条目通常远小于数据行大小，如果只需要读取索引，那么MySQL 就会极大的较少数据访问量
 
-2. 因为索引是按照列值顺序存储的，所以对于IO密集型的范围查询会比随机从磁盘读取每一行数据的IO要少的多
+2. 因为索引是按照列值顺序存储的，所以对于 IO 密集型的范围查询会比随机从磁盘读取每一行数据的IO要少的多
 
-3. 一些存储引擎如MYISAM在内存中只缓存索引，数据则依赖于操作系统来缓存，因此要访问数据需要一次系统调用，这可能会导致严重的性能问题
+3. 一些存储引擎如 MYISAM 在内存中只缓存索引，数据则依赖于操作系统来缓存，因此要访问数据需要一次系统调用，这可能会导致严重的性能问题
 
-4. 由于INNODB的聚簇索引，覆盖索引对INNODB表特别有用
+4. 由于 INNODB 的聚簇索引，覆盖索引对 INNODB 表特别有用
 
 ### 5.3 案例
 
-1. 当发起一个被索引覆盖的查询时，在explain的extra列可以看到using index的信息，此时就使用了覆盖索引。
+1. 当发起一个被索引覆盖的查询时，在 explain 的 extra 列可以看到 using index 的信息，此时就使用了覆盖索引。
 
    表结构
 
@@ -365,9 +363,9 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 
    ![image-20201215205053425](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215205053425.png)
 
-2. 在大多数存储引擎中，覆盖索引只能覆盖那些只访问索引中部分列的查询。不过，可以进一步的进行优化，可以使用innodb的二级索引来覆盖查询。
+2. 在大多数存储引擎中，覆盖索引只能覆盖那些只访问索引中部分列的查询。不过，可以进一步的进行优化，可以使用 innodb 的二级索引来覆盖查询。
 
-   例如：actor使用innodb存储引擎，并在last_name字段用二级索引，虽然该索引的列不包括主键actor_id，但也能够用于对actor_id做覆盖查询。
+   例如：actor 使用 innodb 存储引擎，并在 last_name 字段用二级索引，虽然该索引的列不包括主键 actor_id，但也能够用于对 actor_id 做覆盖查询。
 
    ```sql
    CREATE TABLE `actor` (
@@ -406,13 +404,13 @@ CREATE TABLE IF NOT EXISTS `test_index`(
 
 ### 6.3 使用前缀索引
 
-有时候需要索引很长的字符串，这会让索引变的大且慢，通常情况下可以使用某个列开始的部分字符串，这样大大的节约索引空间，从而提高索引效率，但这会降低索引的选择性，索引的选择性是指不重复的索引值和数据表记录总数的比值，范围从`1/T ~ 1`之间。索引的选择性越高则查询效率越高，因为选择性更高的索引可以让MySQL在查找的时候过滤掉更多的行。
+有时候需要索引很长的字符串，这会让索引变的大且慢，通常情况下可以使用某个列开始的部分字符串，这样大大的节约索引空间，从而提高索引效率，但这会降低索引的选择性，索引的选择性是指不重复的索引值和数据表记录总数的比值，范围从`1/T ~ 1`之间。索引的选择性越高则查询效率越高，因为选择性更高的索引可以让 MySQL 在查找的时候过滤掉更多的行。
 
-一般情况下某个列前缀的选择性也是足够高的，足以满足查询的性能，但是对应BLOB，TEXT，VARCHAR类型的列，必须要使用前缀索引，因为MySQL不允许索引这些列的完整长度，使用该方法的诀窍在于要选择足够长的前缀以保证较高的选择性，通过又不能太长。
+一般情况下某个列前缀的选择性也是足够高的，足以满足查询的性能，但是对应 BLOB，TEXT，VARCHAR 类型的列，必须要使用前缀索引，因为 MySQL 不允许索引这些列的完整长度，使用该方法的诀窍在于要选择足够长的前缀以保证较高的选择性，通过又不能太长。
 
 #### 6.3.1 前缀索引案例演示
 
-MySQL官方数据库sakila
+MySQL 官方数据库 sakila
 
 1. 创建数据库表
 
@@ -468,36 +466,35 @@ MySQL官方数据库sakila
      ```sql
      MySQL> select count(*) as cnt, left(city, 5) as pref from citydemo group by pref order by cnt desc limit 10;
      ```
-  ```
      
-  ![image-20201215210747211](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210747211.png)
+     ![image-20201215210747211](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210747211.png)
      
    - 6个前缀字母
    
      ```sql
      MySQL> select count(*) as cnt, left(city, 6) as pref from citydemo group by pref order by cnt desc limit 10;
-  ```
-
+     ```
+   
      ![image-20201215210813920](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210813920.png)
-
+   
    - 7个前缀字母
    
      ```sql
      MySQL> select count(*) as cnt, left(city, 7) as pref from citydemo group by pref order by cnt desc limit 10;
      ```
-     
+   
      ![image-20201215210841373](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210841373.png)
-     
+   
    - 8个前缀字母
-
+   
      ```sql
-    MySQL> select count(*) as cnt, left(city, 8) as pref from citydemo group by pref order by cnt desc limit 10;
+     MySQL> select count(*) as cnt, left(city, 8) as pref from citydemo group by pref order by cnt desc limit 10;
      ```
-     
-     ![](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210917768.png)
-
-   综上，7个前缀字母的选择性接近于完整列的选择性
-
+   
+      ![](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215210917768.png)
+   
+      综上，7个前缀字母的选择性接近于完整列的选择性
+   
 6. 计算完成之后可以创建前缀索引
 
    ```sql
@@ -505,11 +502,11 @@ MySQL官方数据库sakila
    
    MySQL> show index from citydemo;
    ```
-   
+
    ![](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20201215211208958.png)
-   
-   里面的Cardinality含义：基数，经常使用HyperLogLog算法
-   
+
+   里面的 Cardinality 含义：基数，经常使用HyperLogLog算法
+
 7. 还可以通过另外一种方式计算完整列的选择性，可以看到当前缀长度到达7之后，再增加前缀长度，选择性提升的幅度已经很小了
 
    ```sql
@@ -531,13 +528,13 @@ MySQL有两种方式可以生成有序的结果
 - 排序操作
 - 按索引顺序扫描
 
-如果explain出来的type列的值为index，则说明了使用了索引扫描来做排序
+如果 explain 出来的 type 列的值为 index，则说明了使用了索引扫描来做排序
 
-扫描索引本身是很快的，因为只需要从一条索引记录移动到紧接着下一条记录。但如果索引不能覆盖查询所需的全部列，那么就不得不每扫描一条索引记录就得回表查询一次对应的行，这基本都是随机IO，因此按照索引顺序读取数据的速度通常要比顺序地全表扫描慢。
+扫描索引本身是很快的，因为只需要从一条索引记录移动到紧接着下一条记录。但如果索引不能覆盖查询所需的全部列，那么就不得不每扫描一条索引记录就得回表查询一次对应的行，这基本都是随机 IO，因此按照索引顺序读取数据的速度通常要比顺序地全表扫描慢。
 
 MySQL可以使用同一个索引即满足排序，又用于查找行，如果可能的话，设计索引时应该尽可能地同时满足这两种任务。
 
-只有当索引的列顺序和order by子句的顺序完全一致，并且所有列的排序方式都一样时，MySQL才能够使用索引来对结果进行排序，如果查询需要关联多张表，则只有当order by子句引用的字段全部为第一张表时，才能使用索引做排序。order by子句和查找型查询的限制是一样的，需要满足索引的最左前缀的要求，否则，MySQL都需要执行顺序操作，而无法利用索引排序。
+只有当索引的列顺序和 order by 子句的顺序完全一致，并且所有列的排序方式都一样时，MySQL 才能够使用索引来对结果进行排序，如果查询需要关联多张表，则只有当 order by 子句引用的字段全部为第一张表时，才能使用索引做排序。order by 子句和查找型查询的限制是一样的，需要满足索引的最左前缀的要求，否则，MySQL 都需要执行顺序操作，而无法利用索引排序。
 
 #### 6.4.1 索引扫描案例
 
@@ -838,11 +835,11 @@ No query specified
 
 1. 更新会变更B+树，更新频繁的字段建议索引会大大降低数据库性能
 2. 类似于性别这类区分不大的属性，建立索引是没有意义的，不能有效的过滤数据
-3. 一般区分度在80%以上的时候就可以建立索引，区分度可以使用 count(distinct(列名))/count(*) 来计算
+3. 一般区分度在 80% 以上的时候就可以建立索引，区分度可以使用 count(distinct(列名))/count(*) 来计算
 
 ### 6.9 索引列不允许为null
 
-创建索引的列，不允许为null，可能会得到不符合预期的结果
+创建索引的列，不允许为 null，可能会得到不符合预期的结果
 
 ### 6.10 join
 
@@ -897,7 +894,7 @@ limit时间明显比较短
 
 2. 过早优化，再不了解系统的情况下进行优化
 
-   面试举例（说场景）：在公司遇到一个查询速度比较慢的sql，通过执行计划查看type类使用的or，调整之后变为contract
+   面试举例（说场景）：在公司遇到一个查询速度比较慢的sql，通过执行计划查看 type 类使用的 or，调整之后变为 contract
 
 ## 7 索引监控
 
@@ -996,8 +993,6 @@ select * from itdragon_order_list where transaction_id = '81X97310V32236260E';
 通过查看执行计划发现type = all，需要进行全表扫描
 
 ![image-20200815091802219](https://yeyangshu-picgo.oss-cn-shanghai.aliyuncs.com/img/image-20200815091802219.png)
-
-
 
 **优化一：为transaction_id创建唯一索引**
 
