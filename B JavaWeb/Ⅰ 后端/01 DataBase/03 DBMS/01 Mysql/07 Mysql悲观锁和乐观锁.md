@@ -257,3 +257,35 @@ mysql> select * from book;
 **乐观锁**
 
 比较适合读取操作比较频繁的场景，如果出现大量的写入操作，数据发生冲突的可能性就会增大，为了保证数据的一致性，应用层需要不断的重新获取数据，这样会增加大量的查询操作，降低了系统的吞吐量。
+
+
+
+
+
+悲观锁
+
+```xml
+<!-- mapped statement for IbatisCideAppDAO.lockAppByAlias -->
+<select id="lock" resultMap="" >
+    select
+        tnt_inst_id,
+        app_id,
+        xxx
+    from
+        table
+    where
+        alias = #alias# and version = #version#
+    FOR UPDATE
+</select>
+```
+
+乐观锁更新数据
+
+```sql
+update table set 
+    parent_id=#parentId#,
+    xxx
+where 
+    composite_id = #compositeId# and version=#version#
+```
+
