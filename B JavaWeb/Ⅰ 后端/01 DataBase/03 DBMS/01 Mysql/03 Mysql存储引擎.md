@@ -1,4 +1,4 @@
-# Mysql存储引擎和表类型
+# MySQL 存储引擎和表类型
 
 中文文档：https://www.mysqlzh.com/doc/214/416.html
 
@@ -12,9 +12,15 @@
 | 支持全文索引 |     是     |      是（5.6后支持）       |
 |   适合操作   | 大量select | 大量insert、update、delete |
 
+## InnoDB 存储引擎
 
+InnoDB 通过多版本并发控制（MVCC）来获得高并发性，并且实现了 SQL 标准的 4 种隔离级别，默认为 REPEATABLE 级别。同时，使用一种被称为 next-key locking 的策略来避免幻读现象的产生。
 
-查看数据库的存储引擎
+对于表中的数据，InnoDB 存储引擎采用了聚集（clustered）的方式，因此每张表的存储都是按主键的顺序进行存放。如果没有显示地在表定义时指定主键，InnoDB 存储引擎回味每一行生成一个 6 字节的 ROWID，并以此作为主键。
+
+## 各存储引擎之间的比较
+
+查看数据库所支持的存储引擎
 
 ```powershell
 mysql> show engines\G
