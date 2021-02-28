@@ -41,7 +41,7 @@ MySQL> show profile for query 3;
 16 rows in set (0.00 sec)
 ```
 
-## 2 监控工具二：Performance Schema
+## 2 监控工具二：Performance Sche4ma
 
 MySQL官网：https://dev.MySQL.com/doc/refman/8.0/en/performance-schema.html
 
